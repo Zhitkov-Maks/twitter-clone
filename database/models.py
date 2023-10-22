@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import String, ForeignKey, Table, Column, ARRAY, Integer
+from sqlalchemy import String, ForeignKey, Table, Column, ARRAY, Integer, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship, declarative_base
 
 Base = declarative_base()
@@ -54,6 +54,7 @@ class Tweet(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     user: Mapped[List[User]] = relationship(User, back_populates="tweets", lazy="select")
     likes: Mapped[List[User]] = relationship(User, secondary=likes_table, back_populates="likes", lazy="joined")
+    time_created = Column(DateTime(timezone=True), server_default=func.now())
 
     def __str__(self):
         return f"{self.user_id} {self.likes}"
