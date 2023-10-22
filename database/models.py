@@ -8,21 +8,21 @@ Base = declarative_base()
 likes_table = Table(
     "likes",
     Base.metadata,
-    Column("user_id", ForeignKey("users.id"), primary_key=True),
-    Column("tweet_id", ForeignKey("tweets.tweet_id"), primary_key=True),
+    Column("user_id", ForeignKey("users.id"), primary_key=True, index=True),
+    Column("tweet_id", ForeignKey("tweets.tweet_id"), primary_key=True, index=True),
 )
 
 followers = Table(
     "followers",
     Base.metadata,
-    Column("follower_id", ForeignKey("users.id"), primary_key=True),
-    Column("followed_id", ForeignKey("users.id"), primary_key=True),
+    Column("follower_id", ForeignKey("users.id"), primary_key=True, index=True),
+    Column("followed_id", ForeignKey("users.id"), primary_key=True, index=True),
 )
 
 
 class User(Base):
     __tablename__ = 'users'
-    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
     api_key: Mapped[str] = mapped_column(String(50), unique=True)
     name: Mapped[str] = mapped_column(String(50))
     likes: Mapped[List["Tweet"]] = relationship(secondary=likes_table, back_populates="likes", lazy="select")
@@ -48,10 +48,10 @@ class User(Base):
 
 class Tweet(Base):
     __tablename__ = 'tweets'
-    tweet_id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
+    tweet_id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
     tweet_data: Mapped[str] = mapped_column(String(10_000))
     tweet_media_ids: Mapped[List[int]] = mapped_column(ARRAY(Integer), nullable=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     user: Mapped[List[User]] = relationship(User, back_populates="tweets", lazy="select")
     likes: Mapped[List[User]] = relationship(User, secondary=likes_table, back_populates="likes", lazy="joined")
     time_created = Column(DateTime(timezone=True), server_default=func.now())
@@ -62,5 +62,5 @@ class Tweet(Base):
 
 class Image(Base):
     __tablename__ = 'images'
-    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
     url: Mapped[str] = mapped_column(String(200))
