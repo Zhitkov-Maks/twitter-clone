@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import select, func, desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from starlette import status
 
 from database.models import User, Tweet, Image, likes_table, followers
@@ -21,15 +21,12 @@ async def add_tweet_in_db(session: AsyncSession, user: User, tweet_in: AddTweetS
 
 
 async def get_all_tweet_followed(session: AsyncSession, user_id: int):
-    # stmt = ((select(Tweet, func.count(likes_table.c.user_id).label("likes")).join(
-    #     followers, (followers.c.followed_id == Tweet.user_id)).join(
-    #     likes_table, (likes_table.c.tweet_id == Tweet.tweet_id)
-    # )
-    #         .where(followers.c.follower_id == user_id)
-    #         .group_by(Tweet.tweet_id)
-    #         .order_by(desc("likes")).limit(10)))
-    stmt = (select(Tweet).join(followers, (followers.c.followed_id == Tweet.user_id))
-            .where(followers.c.follower_id == user_id))
+    stmt = (select(Tweet, func.count(likes_table.c.user_id).label("likes"))
+            .join(followers, (followers.c.followed_id == Tweet.user_id))
+            .join(Tweet.likes)
+            .where(followers.c.follower_id == user_id)
+            .group_by(Tweet.tweet_id)
+            .order_by(desc("likes")).limit(10))
     all_tweet = await session.scalars(stmt)
     return all_tweet.unique().all()
 
@@ -106,71 +103,57 @@ async def add_image_in_db(session: AsyncSession, url: str) -> int:
     return img.id
 
 
-async def add_like_in_db(session: AsyncSession, tweet: Tweet, user_id: int):
-    try:
-        user = await get_full_user_data(session, user_id)
-        user.likes.append(tweet)
-        session.add_all(user.likes)
-        await session.commit()
-        return True
-    except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "result": False,
-                "error_type": "IntegrityError",
-                "error_message": "You've already liked it"
-            }
-        )
+async def check_likes(session: AsyncSession, tweet_id: int, user_id: int) -> bool:
+    stmt = select(likes_table).where(
+        (likes_table.c.tweet_id == tweet_id) & (likes_table.c.user_id == user_id))
+    return await session.scalar(stmt)
+
+
+async def add_like_in_db(session: AsyncSession, tweet: Tweet, user_id: int) -> bool | None:
+    exists = await check_likes(session, tweet.tweet_id, user_id)
+    if exists:
+        return False
+
+    user = await get_full_user_data(session, user_id)
+    user.likes.append(tweet)
+    session.add_all(user.likes)
+    await session.commit()
 
 
 async def delete_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
-    try:
-        user.likes.remove(tweet)
-        await session.commit()
-        return True
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "result": False,
-                "error_type": "Bad request",
-                "error_message": "Action cannot be performed"
-            }
-        )
+    exists = await check_likes(session, tweet.tweet_id, user.id)
+    if not exists:
+        return False
+    user = await get_full_user_data(session, user.id)
+    user.likes.remove(tweet)
+    await session.commit()
+
+
+async def check_followed(session: AsyncSession, user_id: int, user_followed_id: int) -> bool:
+    stmt = select(followers).where(
+        (followers.c.follower_id == user_id) & (followers.c.followed_id == user_followed_id))
+    return await session.scalar(stmt)
 
 
 async def add_followed(session: AsyncSession, user_id, user_followed):
-    try:
-        user = await get_user_data_followed(session, user_id)
-        user.followed.append(user_followed)
-        session.add_all(user.followed)
-        await session.commit()
-    except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "result": False,
-                "error_type": "IntegrityError",
-                "error_message": "Action cannot be performed"
-            }
-        )
+    check_follow = await check_followed(session, user_id, user_followed.id)
+    if check_follow:
+        return False
+
+    user = await get_user_data_followed(session, user_id)
+    user.followed.append(user_followed)
+    session.add_all(user.followed)
+    await session.commit()
 
 
 async def remove_followed(session: AsyncSession, user_id, user_followed):
-    try:
-        user = await get_user_data_followed(session, user_id)
-        user.followed.remove(user_followed)
-        await session.commit()
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "result": False,
-                "error_type": "Bad request",
-                "error_message": "Action cannot be performed"
-            }
-        )
+    check_follow = await check_followed(session, user_id, user_followed.id)
+    if not check_follow:
+        return False
+
+    user = await get_user_data_followed(session, user_id)
+    user.followed.remove(user_followed)
+    await session.commit()
 
 
 async def get_image_url(session: AsyncSession, image_id_list: List[int]):
