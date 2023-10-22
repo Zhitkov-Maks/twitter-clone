@@ -7,6 +7,8 @@ services:
         - "80:80"
       depends_on:
         - app
+      volumes:
+        - ./static:/usr/share/nginx/html
 
   app:
     build:
@@ -20,7 +22,7 @@ services:
     depends_on:
       - db
     volumes:
-      - ./static/images:/app/static/images
+      - ./static:/app/static
 
   db:
     image: postgres:15
