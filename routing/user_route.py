@@ -4,10 +4,10 @@ from starlette import status
 from fastapi.security import APIKeyHeader
 
 from database.crud import get_user_by_api_key, get_user_by_id, remove_followed, add_followed
-from database.database import db_helper
+from database.database import get_async_session
 from database.models import User
-from schemas import ReturnUserSchema
-from services import get_user_info, generate_error_message
+from schemas import ReturnUserSchema, Message, SuccessSchema
+from services import get_user_info, generate_error_message, return_user_not_found
 
 router_us = APIRouter(prefix="/api/users")
 api_key_header = APIKeyHeader(name="api-key", auto_error=False)
@@ -20,11 +20,10 @@ api_key_header = APIKeyHeader(name="api-key", auto_error=False)
 )
 async def user_info(
         api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency)
+        session: AsyncSession = Depends(get_async_session)
 ):
     user: User | None = await get_user_by_api_key(session, api_key)
-    result = await get_user_info(session, user.id)
-    return result
+    return await get_user_info(session, user.id)
 
 
 @router_us.get(
@@ -35,43 +34,41 @@ async def user_info(
 async def user_by_id_info(
         user_id: int,
         api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency)
+        session: AsyncSession = Depends(get_async_session)
 ):
     await get_user_by_api_key(session, api_key)
-    result = await get_user_info(session, user_id)
-    return result
+    search_user: User | None = await get_user_by_id(session, user_id)
+    return await get_user_info(session, search_user.id)
 
 
 @router_us.delete(
     "/{user_id}/follow",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
+    response_model=SuccessSchema
 )
 async def remove_follow(
         user_id: int,
         api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency)
+        session: AsyncSession = Depends(get_async_session)
 ):
     user: User | None = await get_user_by_api_key(session, api_key)
     user_followed: User | None = await get_user_by_id(session, user_id)
 
-    removed = await remove_followed(session, user.id, user_followed)
-    if removed is None:
-        return {"result": True}
-    return await generate_error_message(400, "Bad Request", "You've not followed")
+    await remove_followed(session, user.id, user_followed)
+    return {"result": True}
 
 
 @router_us.post(
     "/{user_id}/follow",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
+    response_model=SuccessSchema
 )
 async def add_follow(
         user_id: int,
         api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(db_helper.scoped_session_dependency)
+        session: AsyncSession = Depends(get_async_session)
 ):
     user: User | None = await get_user_by_api_key(session, api_key)
     user_followed: User | None = await get_user_by_id(session, user_id)
-    added = await add_followed(session, user.id, user_followed)
-    if added is None:
-        return {"result": True}
-    return await generate_error_message(409, "Conflict", "You've already followed")
+    await add_followed(session, user.id, user_followed)
+    return {"result": True}
