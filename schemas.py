@@ -7,6 +7,10 @@ class Base(BaseModel):
     ...
 
 
+class SuccessSchema(Base):
+    result: bool
+
+
 class Message(Base):
     result: bool = Field(
         ...,
@@ -38,8 +42,8 @@ class AddTweetSchema(Base):
         max_length=10_000
     )
     tweet_media_ids: List[int] = Field(
-        default=[],
-        description="List of picture IDs"
+        description="Photos from the form are loaded automatically, and tweet_media_ids are substituted with IDs of "
+                    "photos saved in the database."
     )
 
 
@@ -55,15 +59,15 @@ class UserSchema(Base):
     )
 
 
-class ReturnUserSchema(Base):
+class UserSchemaFull(Base):
     model_config = ConfigDict(from_attributes=True)
-    result: bool = Field(
+    id: int = Field(
         ...,
-        description="Result, true or false"
+        description="User ID"
     )
-    user: UserSchema = Field(
+    name: str = Field(
         ...,
-        description="User object"
+        description="User name"
     )
     following: List[UserSchema] = Field(
         ...,
@@ -72,6 +76,30 @@ class ReturnUserSchema(Base):
     followers: List[UserSchema] = Field(
         ...,
         description="List followers"
+    )
+
+
+class UserSchemaLikes(Base):
+    model_config = ConfigDict(from_attributes=True)
+    user_id: int = Field(
+        ...,
+        description="User ID"
+    )
+    name: str = Field(
+        ...,
+        description="User name"
+    )
+
+
+class ReturnUserSchema(Base):
+    model_config = ConfigDict(from_attributes=True)
+    result: bool = Field(
+        ...,
+        description="Result, true or false"
+    )
+    user: UserSchemaFull = Field(
+        ...,
+        description="User object"
     )
 
 
@@ -97,15 +125,6 @@ class ReturnImageSchema(Base):
     )
 
 
-class AttachmentsSchema(Base):
-    url: str
-
-
-class AddUserSchema(BaseModel):
-    name: str = Field()
-    api_key: str = Field()
-
-
 class TweetSchema(Base):
     id: int = Field(
         ...,
@@ -123,7 +142,7 @@ class TweetSchema(Base):
         ...,
         description="User object"
     )
-    likes: List[UserSchema] = Field(
+    likes: List[UserSchemaLikes] = Field(
         ...,
         description="List of users who liked it"
     )
