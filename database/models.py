@@ -1,9 +1,9 @@
 from typing import List
 
 from sqlalchemy import String, ForeignKey, Table, Column, ARRAY, Integer, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship, declarative_base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-Base = declarative_base()
+from database.database import Base
 
 likes_table = Table(
     "likes",
@@ -25,7 +25,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
     api_key: Mapped[str] = mapped_column(String(50), unique=True)
     name: Mapped[str] = mapped_column(String(50))
-    likes: Mapped[List["Tweet"]] = relationship(secondary=likes_table, back_populates="likes", lazy="select")
+    likes: Mapped[List["Tweet"]] = relationship(secondary=likes_table, back_populates="likes", lazy="joined")
     tweets: Mapped[List["Tweet"]] = relationship("Tweet", back_populates="user", lazy="joined",
                                                  cascade="all, delete-orphan")
     followed: Mapped[List["User"]] = relationship(
@@ -52,7 +52,7 @@ class Tweet(Base):
     tweet_data: Mapped[str] = mapped_column(String(10_000))
     tweet_media_ids: Mapped[List[int]] = mapped_column(ARRAY(Integer), nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    user: Mapped[List[User]] = relationship(User, back_populates="tweets", lazy="select")
+    user: Mapped[List[User]] = relationship(User, back_populates="tweets", lazy="joined")
     likes: Mapped[List[User]] = relationship(User, secondary=likes_table, back_populates="likes", lazy="joined")
     time_created = Column(DateTime(timezone=True), server_default=func.now())
 
