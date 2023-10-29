@@ -25,8 +25,8 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
     api_key: Mapped[str] = mapped_column(String(50), unique=True)
     name: Mapped[str] = mapped_column(String(50))
-    likes: Mapped[List["Tweet"]] = relationship(secondary=likes_table, back_populates="likes", lazy="joined")
-    tweets: Mapped[List["Tweet"]] = relationship("Tweet", back_populates="user", lazy="joined",
+    likes: Mapped[List["Tweet"]] = relationship(secondary=likes_table, back_populates="likes", lazy="select")
+    tweets: Mapped[List["Tweet"]] = relationship("Tweet", back_populates="user", lazy="select",
                                                  cascade="all, delete-orphan")
     followed: Mapped[List["User"]] = relationship(
         'User',
