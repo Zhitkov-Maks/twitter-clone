@@ -43,7 +43,7 @@ class AddTweetSchema(Base):
     )
     tweet_media_ids: List[int] = Field(
         description="Photos from the form are loaded automatically, and tweet_media_ids are substituted with IDs of "
-                    "photos saved in the database."
+                    "photos saved in the bd."
     )
 
 
