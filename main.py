@@ -25,5 +25,5 @@ async def add_image(
     session: AsyncSession = Depends(get_async_session),
 ):
     await get_user_by_api_key(session, api_key)
-    image_id: int = await read_and_write_image(session, file)
-    return {"result": True, "media_id": image_id}
+    image_url: str = await read_and_write_image(session, file)
+    return {"result": True, "media_id": image_url}
