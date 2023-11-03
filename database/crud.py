@@ -12,13 +12,22 @@ from database.models import Tweet, likes_table, User, Image, followers
 from schemas import AddTweetSchema
 
 
+async def transform_image_id_in_image_url(
+    session: AsyncSession, tweet_in: AddTweetSchema
+):
+    unpack = tweet_in.model_dump()
+    media = await get_image_url(session, unpack["tweet_media_ids"])
+    unpack["tweet_media_ids"] = list(media)
+    return unpack
+
+
 async def add_tweet_in_db(
     session: AsyncSession, user: User, tweet_in: AddTweetSchema
 ) -> int:
     user = await get_full_user_data(session, user)
-    tweet = Tweet(**tweet_in.model_dump())
-    user.tweets.append(tweet)
-    session.add_all(user.tweets)
+    unpack = await transform_image_id_in_image_url(session, tweet_in)
+    tweet = Tweet(**unpack)
+    user.tweets.append(tweet), session.add_all(user.tweets)
     await session.commit()
     return tweet.tweet_id
 
@@ -178,5 +187,5 @@ async def remove_followed(session: AsyncSession, user_id, user_followed):
 
 
 async def get_image_url(session: AsyncSession, image_id_list: List[int]):
-    stmt = select(Image).where(Image.id.in_(image_id_list))
+    stmt = select(Image.url).where(Image.id.in_(image_id_list))
     return await session.scalars(stmt)
