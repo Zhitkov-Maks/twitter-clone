@@ -1,0 +1,14 @@
+2023-11-02 19:08:56.162 UTC [1] LOG:  starting PostgreSQL 15.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine 12.2.1_git20220924-r10) 12.2.1 20220924, 64-bit
+2023-11-02 19:08:56.162 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2023-11-02 19:08:56.162 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2023-11-02 19:08:56.165 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2023-11-02 19:08:56.170 UTC [25] LOG:  database system was shut down at 2023-11-02 19:03:43 UTC
+2023-11-02 19:08:56.178 UTC [1] LOG:  database system is ready to accept connections
+2023-11-02 19:09:24.585 UTC [30] LOG:  unexpected EOF on client connection with an open transaction
+2023-11-02 19:09:24.913 UTC [1] LOG:  received fast shutdown request
+2023-11-02 19:09:24.914 UTC [1] LOG:  aborting any active transactions
+2023-11-02 19:09:24.917 UTC [1] LOG:  background worker "logical replication launcher" (PID 28) exited with exit code 1
+2023-11-02 19:09:24.917 UTC [23] LOG:  shutting down
+2023-11-02 19:09:24.919 UTC [23] LOG:  checkpoint starting: shutdown immediate
+2023-11-02 19:09:24.926 UTC [23] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.001 s, total=0.009 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB
+2023-11-02 19:09:24.932 UTC [1] LOG:  database system is shut down

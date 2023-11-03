@@ -8,11 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from starlette import status
 
-from database.models import User, Tweet, Image, likes_table
+from database.models import Tweet, likes_table, User, Image, followers
 from schemas import AddTweetSchema
 
 
-async def add_tweet_in_db(session: AsyncSession, user: User, tweet_in: AddTweetSchema) -> int:
+async def add_tweet_in_db(
+    session: AsyncSession, user: User, tweet_in: AddTweetSchema
+) -> int:
+    user = await get_full_user_data(session, user)
     tweet = Tweet(**tweet_in.model_dump())
     user.tweets.append(tweet)
     session.add_all(user.tweets)
@@ -20,11 +23,19 @@ async def add_tweet_in_db(session: AsyncSession, user: User, tweet_in: AddTweetS
     return tweet.tweet_id
 
 
-async def get_all_tweet_followed(session: AsyncSession):
-    stmt = (select(Tweet, func.count(likes_table.c.user_id).label("likes"))
-            .join(Tweet.likes, isouter=True)
-            .group_by(Tweet.tweet_id)
-            .order_by(desc("likes")).limit(25))
+async def get_all_tweet_followed(session: AsyncSession, user_id: int):
+    stmt = (
+        select(
+            Tweet,
+            func.count(likes_table.c.user_id).label("likes"),
+        )
+        .join(followers, (followers.c.followed_id == Tweet.user_id))
+        .join(likes_table, (likes_table.c.tweet_id == Tweet.tweet_id), isouter=True)
+        .where(followers.c.follower_id == user_id)
+        .group_by(Tweet.tweet_id)
+        .order_by(desc("likes"))
+        .limit(25)
+    )
     all_tweet = await session.scalars(stmt)
     return all_tweet.unique().all()
 
@@ -38,24 +49,25 @@ async def get_tweet_by_id(session: AsyncSession, tweet_id: int) -> Tweet:
         detail={
             "result": False,
             "error_type": "Not Found",
-            "error_message": f"Tweet is not found"
-        }
+            "error_message": f"Tweet is not found",
+        },
     )
 
 
-async def get_full_user_data(session: AsyncSession, user_id) -> User:
-    stmt = (select(User)
-            .options(joinedload(User.followed))
-            .options(joinedload(User.follower))
-            .options(joinedload(User.likes)).filter(User.id == user_id))
+async def get_full_user_data(session: AsyncSession, user: User) -> User:
+    stmt = (
+        select(User)
+        .options(joinedload(User.followed))
+        .options(joinedload(User.follower))
+        .options(joinedload(User.tweets))
+        .filter(User.id == user.id)
+    )
     user = await session.scalar(stmt)
     return user
 
 
 async def get_user_data_followed(session: AsyncSession, user_id) -> User:
-    stmt = (select(User)
-            .options(joinedload(User.followed))
-            .filter(User.id == user_id))
+    stmt = select(User).options(joinedload(User.followed)).filter(User.id == user_id)
     user = await session.scalar(stmt)
     return user
 
@@ -70,8 +82,8 @@ async def get_user_by_api_key(session: AsyncSession, api_key: str) -> User:
         detail={
             "result": False,
             "error_type": "Not Found",
-            "error_message": f"User is not found"
-        }
+            "error_message": f"User is not found",
+        },
     )
 
 
@@ -84,8 +96,8 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
         detail={
             "result": False,
             "error_type": "Not Found",
-            "error_message": f"User is not found"
-        }
+            "error_message": f"User is not found",
+        },
     )
 
 
@@ -101,11 +113,10 @@ async def add_image_in_db(session: AsyncSession, url: str) -> int:
     return img.id
 
 
-async def add_like_in_db(session: AsyncSession, tweet: Tweet, user_id: int):
+async def add_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
     try:
-        user = await get_full_user_data(session, user_id)
-        user.likes.append(tweet)
-        session.add_all(user.likes)
+        tweet.likes.append(user)
+        session.add_all(tweet.likes)
         await session.commit()
     except IntegrityError:
         raise HTTPException(
@@ -113,15 +124,14 @@ async def add_like_in_db(session: AsyncSession, tweet: Tweet, user_id: int):
             detail={
                 "result": False,
                 "error_type": "Bad Request",
-                "error_message": "You've already liked it"
-            }
+                "error_message": "You've already liked it",
+            },
         )
 
 
 async def delete_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
     try:
-        user = await get_full_user_data(session, user.id)
-        user.likes.remove(tweet)
+        tweet.likes.remove(user)
         await session.commit()
     except ValueError:
         raise HTTPException(
@@ -129,8 +139,8 @@ async def delete_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
             detail={
                 "result": False,
                 "error_type": "Bad Request",
-                "error_message": "You've already deleted it"
-            }
+                "error_message": "You've already deleted it",
+            },
         )
 
 
@@ -146,8 +156,8 @@ async def add_followed(session: AsyncSession, user_id, user_followed):
             detail={
                 "result": False,
                 "error_type": "Bad Request",
-                "error_message": f"User has already been added"
-            }
+                "error_message": f"User has already been added",
+            },
         )
 
 
@@ -162,13 +172,11 @@ async def remove_followed(session: AsyncSession, user_id, user_followed):
             detail={
                 "result": False,
                 "error_type": "Bad Request",
-                "error_message": f"User has already been deleted"
-            }
+                "error_message": f"User has already been deleted",
+            },
         )
 
 
 async def get_image_url(session: AsyncSession, image_id_list: List[int]):
-    stmt = select(Image).where(
-        Image.id.in_(image_id_list)
-    )
+    stmt = select(Image).where(Image.id.in_(image_id_list))
     return await session.scalars(stmt)

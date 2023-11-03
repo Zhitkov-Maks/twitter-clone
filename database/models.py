@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy import String, ForeignKey, Table, Column, ARRAY, Integer, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.database import Base
+from database.settings import Base
 
 likes_table = Table(
     "likes",
@@ -21,39 +21,53 @@ followers = Table(
 
 
 class User(Base):
-    __tablename__ = 'users'
-    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(
+        Integer, autoincrement=True, primary_key=True, index=True
+    )
     api_key: Mapped[str] = mapped_column(String(50), unique=True)
     name: Mapped[str] = mapped_column(String(50))
-    likes: Mapped[List["Tweet"]] = relationship(secondary=likes_table, back_populates="likes", lazy="select")
-    tweets: Mapped[List["Tweet"]] = relationship("Tweet", back_populates="user", lazy="select",
-                                                 cascade="all, delete-orphan")
+    likes: Mapped[List["Tweet"]] = relationship(
+        secondary=likes_table,
+        back_populates="likes",
+        lazy="select",
+        cascade="all, delete",
+    )
+    tweets: Mapped[List["Tweet"]] = relationship(
+        "Tweet", back_populates="user", lazy="select", cascade="all, delete"
+    )
     followed: Mapped[List["User"]] = relationship(
-        'User',
+        "User",
         secondary=followers,
         primaryjoin=id == followers.c.follower_id,
         secondaryjoin=id == followers.c.followed_id,
         back_populates="follower",
-        lazy="select"
+        lazy="select",
     )
     follower: Mapped[List["User"]] = relationship(
-        'User',
+        "User",
         secondary=followers,
         primaryjoin=id == followers.c.followed_id,
         secondaryjoin=id == followers.c.follower_id,
         back_populates="followed",
-        lazy="select"
+        lazy="select",
     )
 
 
 class Tweet(Base):
-    __tablename__ = 'tweets'
-    tweet_id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
+    __tablename__ = "tweets"
+    tweet_id: Mapped[int] = mapped_column(
+        Integer, autoincrement=True, primary_key=True, index=True
+    )
     tweet_data: Mapped[str] = mapped_column(String(10_000))
     tweet_media_ids: Mapped[List[int]] = mapped_column(ARRAY(Integer), nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    user: Mapped[List[User]] = relationship(User, back_populates="tweets", lazy="joined")
-    likes: Mapped[List[User]] = relationship(User, secondary=likes_table, back_populates="likes", lazy="joined")
+    user: Mapped[List[User]] = relationship(
+        User, back_populates="tweets", lazy="joined"
+    )
+    likes: Mapped[List[User]] = relationship(
+        User, secondary=likes_table, back_populates="likes", lazy="joined"
+    )
     time_created = Column(DateTime(timezone=True), server_default=func.now())
 
     def __str__(self):
@@ -61,6 +75,8 @@ class Tweet(Base):
 
 
 class Image(Base):
-    __tablename__ = 'images'
-    id: Mapped[int] = mapped_column(Integer, autoincrement=True, primary_key=True, index=True)
+    __tablename__ = "images"
+    id: Mapped[int] = mapped_column(
+        Integer, autoincrement=True, primary_key=True, index=True
+    )
     url: Mapped[str] = mapped_column(String(200))

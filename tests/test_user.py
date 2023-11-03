@@ -30,14 +30,14 @@ async def test_get_user_by_id_not_exists(ac: AsyncClient):
 
 
 async def test_user_add_followed(ac: AsyncClient):
-    response = await ac.post("/api/users/5/follow", headers={"api-key": "test"})
+    response = await ac.post("/api/users/4/follow", headers={"api-key": "test"})
     data = response.json()
     assert data.get("result")
     assert response.status_code == 201
 
 
 async def test_user_add_followed_twice(ac: AsyncClient):
-    response = await ac.post("/api/users/5/follow", headers={"api-key": "test"})
+    response = await ac.post("/api/users/4/follow", headers={"api-key": "test"})
     data = response.json()
     assert not data.get("result")
     assert data.get("detail").get("error_message") == "User has already been added"
@@ -45,14 +45,14 @@ async def test_user_add_followed_twice(ac: AsyncClient):
 
 
 async def test_user_remove_followed(ac: AsyncClient):
-    response = await ac.delete("/api/users/5/follow", headers={"api-key": "test"})
+    response = await ac.delete("/api/users/4/follow", headers={"api-key": "test"})
     data = response.json()
     assert data.get("result")
     assert response.status_code == 200
 
 
 async def test_user_remove_followed_twice(ac: AsyncClient):
-    response = await ac.delete("/api/users/5/follow", headers={"api-key": "test"})
+    response = await ac.delete("/api/users/4/follow", headers={"api-key": "test"})
     data = response.json()
     assert not data.get("result")
     assert data.get("detail").get("error_message") == "User has already been deleted"
