@@ -10,7 +10,6 @@ from database.crud import (
     get_full_user_data,
     get_all_tweet_followed,
     add_image_in_db,
-    get_image_url,
 )
 
 OUT_PATH = Path("dist/images")
@@ -26,8 +25,7 @@ async def read_and_write_image(session: AsyncSession, file: UploadFile):
 
         async with aiofiles.open(file_location, "wb") as file_object:
             await file_object.write(content)
-        result: int = await add_image_in_db(session, file.filename)
-        return result
+        return await add_image_in_db(session, file.filename)
 
     raise HTTPException(
         status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -43,12 +41,10 @@ async def tweet_constructor(session: AsyncSession, user_id: int) -> dict:
     tweet_list: List[dict] = []
     tweets = await get_all_tweet_followed(session, user_id)
     for tweet in tweets:
-        print(tweet)
-        attachments = await get_image_url(session, tweet.tweet_media_ids)
         tweet_data: dict = {
             "id": tweet.tweet_id,
             "content": tweet.tweet_data,
-            "attachments": [attachment.url for attachment in attachments],
+            "attachments": tweet.tweet_media_ids,
             "author": tweet.user,
             "likes": [{"user_id": usr.id, "name": usr.name} for usr in tweet.likes],
         }
