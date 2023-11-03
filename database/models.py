@@ -60,7 +60,9 @@ class Tweet(Base):
         Integer, autoincrement=True, primary_key=True, index=True
     )
     tweet_data: Mapped[str] = mapped_column(String(10_000))
-    tweet_media_ids: Mapped[List[int]] = mapped_column(ARRAY(Integer), nullable=True)
+    tweet_media_ids: Mapped[List[int]] = mapped_column(
+        ARRAY(String(200)), nullable=True
+    )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     user: Mapped[List[User]] = relationship(
         User, back_populates="tweets", lazy="joined"
