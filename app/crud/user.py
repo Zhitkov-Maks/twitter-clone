@@ -8,24 +8,6 @@ from starlette import status
 from models.model import User
 
 
-async def create_message(
-        err_message: str,
-        err_type: str = 'Bad Request',
-) -> dict:
-    """
-    Function to standardize.
-
-    :parameter err_message: Error message.
-    :parameter err_type: Error type
-    :return: dict.
-    """
-    return {
-        'result': False,
-        'error_type': err_type,
-        'error_message': err_message,
-    }
-
-
 async def get_full_user_data(session: AsyncSession, user: User) -> User:
     """
     Function to download complete user information.
@@ -70,10 +52,11 @@ async def get_user_by_api_key(session: AsyncSession, api_key: str) -> User:
         return user
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=await create_message(
-            'User is not found',
-            'Not Found',
-        ),
+        detail={
+            'result': False,
+            'error_type': 'Not Found',
+            'error_message': 'User is not found.'
+        },
     )
 
 
@@ -89,10 +72,11 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
         return user
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=await create_message(
-            'User is not found',
-            'Not Found',
-        ),
+        detail={
+            'result': False,
+            'error_type': 'Not Found',
+            'error_message': 'User is not found.'
+        },
     )
 
 

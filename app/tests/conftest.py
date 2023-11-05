@@ -43,11 +43,11 @@ async def insert_objects_users(
             usr_maks = User(name="Maks", api_key="qwerty")
             usr_polina = User(name="Polina", api_key="test_2")
             usr_anna = User(name="Anna", api_key="qwerty_2")
+            session.add_all([usr_alex, usr_maks, usr_polina, usr_anna])
 
             usr_alex.followed.append(usr_maks)
             usr_maks.followed.append(usr_polina)
             usr_anna.followed.append(usr_alex)
-            session.add_all([usr_alex, usr_maks, usr_polina, usr_anna])
 
             tweet_1 = Tweet(tweet_data="Tweet content",
                             tweet_media_ids=["image.png"])

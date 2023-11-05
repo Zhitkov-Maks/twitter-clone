@@ -40,13 +40,6 @@ async def get_all_tweet_followed(session: AsyncSession, user_id: int):
     :param session: AsyncSession
     :param user_id: User's ID
     """
-    # stmt = select(
-    #     Tweet, func.count(likes_table.c.user_id).label('likes'),
-    # ).join(
-    #     likes_table, (likes_table.c.tweet_id == Tweet.tweet_id), isouter=True,
-    # ).group_by(Tweet.tweet_id).order_by(desc('likes')).limit(25)
-    # all_tweet = await session.scalars(stmt)
-
     stmt = select(
         Tweet, func.count(likes_table.c.user_id).label('likes'),
     ).join(
@@ -72,10 +65,11 @@ async def get_tweet_by_id(session: AsyncSession, tweet_id: int) -> Tweet:
         return tweet
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=await create_message(
-            'Tweet is not found',
-            'Not Found',
-        ),
+        detail={
+            'result': False,
+            'error_type': 'Not Found',
+            'error_message': 'Tweet is not found.',
+        },
     )
 
 
@@ -100,13 +94,17 @@ async def add_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
     """
     try:
         tweet.likes.append(user)
+        session.add_all(tweet.likes)
+        await session.commit()
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=await create_message('You have already liked it'),
+            detail={
+                'result': False,
+                'error_type': 'Bad Request',
+                'error_message': 'You are already liked it.',
+            },
         )
-    session.add_all(tweet.likes)
-    await session.commit()
 
 
 async def delete_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
@@ -119,27 +117,13 @@ async def delete_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
     """
     try:
         tweet.likes.remove(user)
+        await session.commit()
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=await create_message('You have already deleted it'),
+            detail={
+                'result': False,
+                'error_type': 'Bad Request',
+                'error_message': 'You are already deleted it.',
+            },
         )
-    await session.commit()
-
-
-async def create_message(
-        err_message: str,
-        err_type: str = 'Bad Request',
-) -> dict:
-    """
-    Function to standardize.
-
-    :parameter err_message: Error message.
-    :parameter err_type: Error type
-    :return: dict.
-    """
-    return {
-        'result': False,
-        'error_type': err_type,
-        'error_message': err_message,
-    }
