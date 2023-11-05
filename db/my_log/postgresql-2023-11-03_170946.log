@@ -1,0 +1,17 @@
+2023-11-03 17:09:46.114 UTC [1] LOG:  starting PostgreSQL 15.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine 12.2.1_git20220924-r10) 12.2.1 20220924, 64-bit
+2023-11-03 17:09:46.114 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2023-11-03 17:09:46.114 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2023-11-03 17:09:46.116 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2023-11-03 17:09:46.118 UTC [25] LOG:  database system was shut down at 2023-11-03 17:09:27 UTC
+2023-11-03 17:09:46.121 UTC [1] LOG:  database system is ready to accept connections
+2023-11-03 17:14:46.217 UTC [23] LOG:  checkpoint starting: time
+2023-11-03 17:14:49.244 UTC [23] LOG:  checkpoint complete: wrote 33 buffers (0.2%); 0 WAL file(s) added, 0 removed, 0 recycled; write=3.014 s, sync=0.006 s, total=3.027 s; sync files=23, longest=0.003 s, average=0.001 s; distance=76 kB, estimate=76 kB
+2023-11-03 17:19:46.344 UTC [23] LOG:  checkpoint starting: time
+2023-11-03 17:19:47.761 UTC [23] LOG:  checkpoint complete: wrote 15 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.407 s, sync=0.005 s, total=1.418 s; sync files=15, longest=0.003 s, average=0.001 s; distance=18 kB, estimate=70 kB
+2023-11-03 17:23:58.760 UTC [1] LOG:  received fast shutdown request
+2023-11-03 17:23:58.761 UTC [1] LOG:  aborting any active transactions
+2023-11-03 17:23:58.762 UTC [1] LOG:  background worker "logical replication launcher" (PID 28) exited with exit code 1
+2023-11-03 17:23:58.762 UTC [23] LOG:  shutting down
+2023-11-03 17:23:58.763 UTC [23] LOG:  checkpoint starting: shutdown immediate
+2023-11-03 17:23:58.769 UTC [23] LOG:  checkpoint complete: wrote 19 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.002 s, total=0.007 s; sync files=19, longest=0.001 s, average=0.001 s; distance=18 kB, estimate=65 kB
+2023-11-03 17:23:58.771 UTC [1] LOG:  database system is shut down

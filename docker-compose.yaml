@@ -13,6 +13,7 @@ services:
 
   app:
     build:
+      context: app
       dockerfile: Dockerfile
     stop_signal: SIGKILL
     expose:
