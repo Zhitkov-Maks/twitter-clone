@@ -11,12 +11,14 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import NullPool
 
+from config import DB_USER_TEST, DB_PASS_TEST, DB_NAME_TEST
 from main import app
 from models import User, Tweet
 from models.db_conf import get_async_session, Base
 
+
 DATABASE_URL_TEST: str = (
-    f"postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
+    f"postgresql+asyncpg://{DB_USER_TEST}:{DB_PASS_TEST}@localhost:5433/{DB_NAME_TEST}"
 )
 
 engine_test = create_async_engine(DATABASE_URL_TEST, poolclass=NullPool)

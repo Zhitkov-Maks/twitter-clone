@@ -1,11 +1,7 @@
-"""
-Module services.
-
-Performs actions that are inappropriate to do at endpoints
-"""
+"""Module services."""
 
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import aiofiles
 from fastapi import HTTPException, UploadFile
@@ -14,7 +10,7 @@ from starlette import status
 
 from crud.tweet import get_all_tweet_followed
 from crud.user import get_full_user_data
-from models.model import Image
+from models.model import Image, User
 
 OUT_PATH = Path(__file__).parent / './dist/images/'
 OUT_PATH.mkdir(exist_ok=True, parents=True)
@@ -24,19 +20,8 @@ OUT_PATH = OUT_PATH.absolute()
 async def read_and_write_image(
         session: AsyncSession,
         img: UploadFile,
-) -> int | HTTPException:
-    """
-    Will read and write.
-
-    The function will read the file and
-    if the file is valid, it will save it and
-    write it to the database.
-
-    :param session: AsyncSession for working with a database.
-    :param img: File from form.
-    :raise: If the file type is not supported.
-    :return: Image's ID
-    """
+) -> int:
+    """Read and write."""
     allowed_types = ('image/jpg', 'image/png', 'image/jpeg')
     if img.content_type in allowed_types:
         file_location = '{0}/{1}'.format(OUT_PATH, img.filename)
@@ -56,18 +41,14 @@ async def read_and_write_image(
     )
 
 
-async def tweet_constructor(session: AsyncSession, user_id: int) -> dict:
-    """
-    Will assemble a dictionary to satisfy the frontend conditions.
-
-    :param session: AsyncSession for working with a database.
-    :param user_id: User's ID
-    :return: We return data in the form dict.
-    """
-    tweet_list: List[dict] = []
+async def tweet_constructor(
+        session: AsyncSession, user_id: int
+) -> Dict[str, bool | List[Dict[str, int | str]]]:
+    """Will assemble a dictionary to satisfy the frontend conditions."""
+    tweet_list = []
     tweets = await get_all_tweet_followed(session, user_id)
     for tweet in tweets:
-        tweet_data: dict = {
+        tweet_data = {
             'id': tweet.tweet_id,
             'content': tweet.tweet_data,
             'attachments': tweet.tweet_media_ids,
@@ -81,33 +62,24 @@ async def tweet_constructor(session: AsyncSession, user_id: int) -> dict:
     return {'result': True, 'tweets': tweet_list}
 
 
-async def get_user_info(session: AsyncSession, user) -> dict:
-    """
-    Will return complete information about the user.
-
-    :param session: AsyncSession for working with a database.
-    :param user: Object user
-    :return: We return data in the form dict.
-    """
-    user = await get_full_user_data(session, user)
+async def get_user_info(
+        session: AsyncSession, user
+) -> Dict[str, bool | Dict[str, int | str]]:
+    """Will return complete information about the user."""
+    user_full: User = await get_full_user_data(session, user)
     return {
         'result': True,
         'user': {
-            'id': user.id,
-            'name': user.name,
-            'followers': user.follower,
-            'following': user.followed,
+            'id': user_full.id,
+            'name': user_full.name,
+            'followers': user_full.follower,
+            'following': user_full.followed,
         },
     }
 
 
-async def add_image_in_db(session: AsyncSession, url: str) -> int:
-    """
-    Function for adding a picture to the database.
-
-    :param session: AsyncSession.
-    :param url: name images.
-    """
+async def add_image_in_db(session: AsyncSession, url: str | None) -> int:
+    """Function for adding a picture to the database."""
     img: Image = Image(url=url)
     session.add(img)
     await session.commit()

@@ -6,7 +6,7 @@ from starlette import status
 
 from crud.image import transform_image_id_in_image_url
 from crud.user import get_full_user_data
-from models.model import Tweet, followers
+from models.model import Tweet
 from models.model import User, likes_table
 from schemas.tweet_schema import AddTweetSchema
 
@@ -16,13 +16,7 @@ async def add_tweet_in_db(
         user: User,
         tweet_in: AddTweetSchema,
 ) -> int:
-    """
-    Function to add a new tweet.
-
-    :param session: AsyncSession
-    :param user: User
-    :param tweet_in: Data for creating tweet
-    """
+    """Function to add a new tweet."""
     user = await get_full_user_data(session, user)
     unpack = await transform_image_id_in_image_url(session, tweet_in)
     tweet = Tweet(**unpack)
@@ -33,33 +27,28 @@ async def add_tweet_in_db(
 
 
 async def get_all_tweet_followed(session: AsyncSession, user_id: int):
-    """
-    Function for receiving tweets sorted by.
-
-    the number of likes from app_users you follow
-    :param session: AsyncSession
-    :param user_id: User's ID
-    """
+    """Function for receiving tweets sorted by."""
     stmt = select(
         Tweet, func.count(likes_table.c.user_id).label('likes'),
     ).join(
-        followers, (followers.c.followed_id == Tweet.user_id),
-    ).join(
         likes_table, (likes_table.c.tweet_id == Tweet.tweet_id), isouter=True,
-    ).where(
-        followers.c.follower_id == user_id,
-    ).group_by(Tweet.tweet_id).order_by(desc('likes')).limit(25)
+    ).group_by(
+        Tweet.tweet_id).order_by(desc('likes')).limit(25)
+    # stmt = select(
+    #     Tweet, func.count(likes_table.c.user_id).label('likes'),
+    # ).join(
+    #     followers, (followers.c.followed_id == Tweet.user_id),
+    # ).join(
+    #     likes_table, (likes_table.c.tweet_id == Tweet.tweet_id), isouter=True,
+    # ).where(
+    #     followers.c.follower_id == user_id,
+    # ).group_by(Tweet.tweet_id).order_by(desc('likes')).limit(25)
     all_tweet = await session.scalars(stmt)
     return all_tweet.unique().all()
 
 
 async def get_tweet_by_id(session: AsyncSession, tweet_id: int) -> Tweet:
-    """
-    Function to get tweet by ID.
-
-    :param session: AsyncSession
-    :param tweet_id: json with tweet data
-    """
+    """Function to get tweet by ID."""
     tweet: Tweet | None = await session.get(Tweet, tweet_id)
     if tweet is not None:
         return tweet
@@ -74,24 +63,13 @@ async def get_tweet_by_id(session: AsyncSession, tweet_id: int) -> Tweet:
 
 
 async def delete_tweet_by_id(session: AsyncSession, tweet: Tweet):
-    """
-    Function for deleting a tweet by ID.
-
-    :param session: AsyncSession
-    :param tweet: Tweet
-    """
+    """Function for deleting a tweet by ID."""
     await session.delete(tweet)
     await session.commit()
 
 
 async def add_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
-    """
-    Function for adding likes.
-
-    :param session: AsyncSession
-    :param tweet: Tweet
-    :param user: User
-    """
+    """Function for adding likes."""
     try:
         tweet.likes.append(user)
         session.add_all(tweet.likes)
@@ -108,13 +86,7 @@ async def add_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
 
 
 async def delete_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
-    """
-    Function for removing likes.
-
-    :param session: AsyncSession
-    :param tweet: Tweet
-    :param user: User
-    """
+    """Function for removing likes."""
     try:
         tweet.likes.remove(user)
         await session.commit()

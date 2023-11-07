@@ -9,12 +9,7 @@ from models.model import User
 
 
 async def get_full_user_data(session: AsyncSession, user: User) -> User:
-    """
-    Function to download complete user information.
-
-    :param session: AsyncSession
-    :param user: User
-    """
+    """Function to download complete user information."""
     stmt = (
         select(User).
         options(joinedload(User.followed)).
@@ -26,12 +21,7 @@ async def get_full_user_data(session: AsyncSession, user: User) -> User:
 
 
 async def get_user_data_followed(session: AsyncSession, user_id) -> User:
-    """
-    Function for getting app_users subscribed to.
-
-    :param session: AsyncSession
-    :param user_id: User's ID
-    """
+    """Function for getting users subscribed to."""
     stmt = (
         select(User).options(joinedload(User.followed)).
         filter(User.id == user_id)
@@ -40,12 +30,7 @@ async def get_user_data_followed(session: AsyncSession, user_id) -> User:
 
 
 async def get_user_by_api_key(session: AsyncSession, api_key: str) -> User:
-    """
-    Function to get user by api-key.
-
-    :param session: AsyncSession
-    :param api_key: User's api-key
-    """
+    """Function to get user by api-key."""
     stmt = select(User).where(User.api_key == api_key)
     user: User | None = await session.scalar(stmt)
     if user is not None:
@@ -61,12 +46,7 @@ async def get_user_by_api_key(session: AsyncSession, api_key: str) -> User:
 
 
 async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
-    """
-    Function to get user by ID.
-
-    :param session
-    :param user_id
-    """
+    """Function to get user by ID."""
     user: User | None = await session.get(User, user_id)
     if user is not None:
         return user
@@ -81,13 +61,7 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
 
 
 async def add_followed(session: AsyncSession, user_id, user_followed):
-    """
-    Add subscription.
-
-    :param session
-    :param user_id
-    :param user_followed
-    """
+    """Add subscription."""
     user = await get_user_data_followed(session, user_id)
     try:
         user.followed.append(user_followed)
@@ -105,13 +79,7 @@ async def add_followed(session: AsyncSession, user_id, user_followed):
 
 
 async def remove_followed(session: AsyncSession, user_id, user_followed):
-    """
-    Function for unsubscribing from a user.
-
-    :param session
-    :param user_followed
-    :param user_id
-    """
+    """Function for unsubscribing from a user."""
     user = await get_user_data_followed(session, user_id)
     try:
         user.followed.remove(user_followed)

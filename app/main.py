@@ -4,6 +4,7 @@ The application initialization.
 The application initialization and module
 also contains an endpoint for loading images.
 """
+from typing import Dict
 
 from fastapi import Depends, FastAPI, File, HTTPException, Security, UploadFile
 from fastapi.security import APIKeyHeader
@@ -35,17 +36,8 @@ async def add_image(
         file: UploadFile = File(...),
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
-    """
-    Endpoint will save the image.
-
-    :param session: AsyncSession for working with a database.
-    :param api_key: User's api-key.
-    :param file: File from form.
-
-    :return: We return data in the form dict.
-
-    """
+) -> Dict[str, int]:
+    """Endpoint will save the image."""
     await get_user_by_api_key(session, api_key)
-    image_url: int | HTTPException = await read_and_write_image(session, file)
+    image_url: int = await read_and_write_image(session, file)
     return {'result': True, 'media_id': image_url}

@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import APIRouter, Depends, Security
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +29,7 @@ api_key_header = APIKeyHeader(name='api-key', auto_error=False)
 async def user_info(
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict[str, bool]:
     """Get information about the current user."""
     user: User | None = await get_user_by_api_key(session, api_key)
     return await get_user_info(session, user)
@@ -42,7 +44,7 @@ async def user_by_id_info(
         user_id: int,
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict[str, bool]:
     """Get information about a user by ID."""
     await get_user_by_api_key(session, api_key)
     search_user: User | None = await get_user_by_id(session, user_id)
@@ -58,10 +60,10 @@ async def remove_follow(
         user_id: int,
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict[str, bool]:
     """Unfollow user."""
-    user: User | None = await get_user_by_api_key(session, api_key)
-    user_followed: User | None = await get_user_by_id(session, user_id)
+    user: User = await get_user_by_api_key(session, api_key)
+    user_followed: User = await get_user_by_id(session, user_id)
 
     await remove_followed(session, user.id, user_followed)
     return {'result': True}
@@ -76,9 +78,9 @@ async def add_follow(
         user_id: int,
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
+) -> Dict[str, bool]:
     """Add subscription."""
-    user: User | None = await get_user_by_api_key(session, api_key)
-    user_followed: User | None = await get_user_by_id(session, user_id)
+    user: User = await get_user_by_api_key(session, api_key)
+    user_followed: User = await get_user_by_id(session, user_id)
     await add_followed(session, user.id, user_followed)
     return {'result': True}

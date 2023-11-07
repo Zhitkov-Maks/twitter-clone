@@ -1,3 +1,5 @@
+from typing import Dict
+
 from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +26,6 @@ from service import tweet_constructor
 
 route_tw = APIRouter(prefix='/api')
 api_key_header = APIKeyHeader(name='api-key', auto_error=False)
-result_true = {'result': True}
 
 
 @route_tw.get(
@@ -35,8 +36,8 @@ result_true = {'result': True}
 async def get_all_tweets(
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
-    """Endpoint for getting list tweets."""
+) -> Dict[str, bool]:
+    """Get list tweets."""
     user = await get_user_by_api_key(session, api_key)
     return await tweet_constructor(session, user.id)
 
@@ -50,8 +51,8 @@ async def add_tweets(
         tweet_in: AddTweetSchema,
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
-    """Endpoint for adding "tweet."""
+) -> Dict[str, int]:
+    """Added "tweet."""
     user: User | None = await get_user_by_api_key(session, api_key)
     tweet: int = await add_tweet_in_db(session, user, tweet_in)
     return {'result': True, 'tweet_id': tweet}
@@ -66,9 +67,9 @@ async def delete_tweet(
         tweet_id: int,
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
-    """Endpoint for removing tweet."""
-    user: User | None = await get_user_by_api_key(session, api_key)
+) -> Dict[str, bool]:
+    """Removed tweet."""
+    user: User = await get_user_by_api_key(session, api_key)
     tweet: Tweet = await get_tweet_by_id(session, tweet_id)
 
     if tweet.user_id != user.id:
@@ -82,7 +83,7 @@ async def delete_tweet(
         )
 
     await delete_tweet_by_id(session, tweet)
-    return result_true
+    return {"result": True}
 
 
 @route_tw.post(
@@ -93,12 +94,12 @@ async def add_likes(
         tweet_id: int,
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
-    """Endpoint for adding likes."""
+) -> Dict[str, bool]:
+    """Added likes."""
     user: User | None = await get_user_by_api_key(session, api_key)
     tweet: Tweet | None = await get_tweet_by_id(session, tweet_id)
     await add_like_in_db(session, tweet, user)
-    return result_true
+    return {"result": True}
 
 
 @route_tw.delete(
@@ -109,10 +110,10 @@ async def delete_likes(
         tweet_id: int,
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
-) -> dict:
-    """Endpoint for removing likes."""
+) -> Dict[str, bool]:
+    """Removed likes."""
     user: User | None = await get_user_by_api_key(session, api_key)
     tweet: Tweet | None = await get_tweet_by_id(session, tweet_id)
 
     await delete_like_in_db(session, tweet, user)
-    return result_true
+    return {"result": True}

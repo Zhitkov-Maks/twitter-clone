@@ -5,11 +5,11 @@ RUN mkdir /app
 COPY requirements.txt ./app/
 RUN pip install -r ./app/requirements.txt
 
-ADD ./crud ./app/crud
-ADD ./models ./app/models
-ADD ./routes ./app/routes
-ADD ./schemas ./app/schemas
-COPY .env main.py service.py config.py ./app/
+ADD ./app/crud ./app/crud
+ADD ./app/models ./app/models
+ADD ./app/routes ./app/routes
+ADD ./app/schemas ./app/schemas
+COPY  ./app/main.py .env ./app/service.py ./app/config.py ./app/
 WORKDIR ./app
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
