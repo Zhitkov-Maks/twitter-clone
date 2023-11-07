@@ -13,7 +13,6 @@ services:
 
   app:
     build:
-      context: app
       dockerfile: Dockerfile
     stop_signal: SIGKILL
     expose:
@@ -28,7 +27,6 @@ services:
 
   db:
     image: postgres:15-alpine
-    command: [ "postgres", "-c", "log_destination=stderr", "-c", "logging_collector=on", "-c", "log_directory=my_log" ]
     environment:
       - "POSTGRES_USER=${DB_USER}"
       - "POSTGRES_PASSWORD=${DB_PASS}"
