@@ -12,9 +12,9 @@ from schemas.tweet_schema import AddTweetSchema
 
 
 async def add_tweet_in_db(
-        session: AsyncSession,
-        user: User,
-        tweet_in: AddTweetSchema,
+    session: AsyncSession,
+    user: User,
+    tweet_in: AddTweetSchema,
 ) -> int:
     """Function to add a new tweet."""
     user = await get_full_user_data(session, user)
@@ -28,12 +28,20 @@ async def add_tweet_in_db(
 
 async def get_all_tweet_followed(session: AsyncSession, user_id: int):
     """Function for receiving tweets sorted by."""
-    stmt = select(
-        Tweet, func.count(likes_table.c.user_id).label('likes'),
-    ).join(
-        likes_table, (likes_table.c.tweet_id == Tweet.tweet_id), isouter=True,
-    ).group_by(
-        Tweet.tweet_id).order_by(desc('likes')).limit(25)
+    stmt = (
+        select(
+            Tweet,
+            func.count(likes_table.c.user_id).label("likes"),
+        )
+        .join(
+            likes_table,
+            (likes_table.c.tweet_id == Tweet.tweet_id),
+            isouter=True,
+        )
+        .group_by(Tweet.tweet_id)
+        .order_by(desc("likes"))
+        .limit(25)
+    )
     # stmt = select(
     #     Tweet, func.count(likes_table.c.user_id).label('likes'),
     # ).join(
@@ -55,9 +63,9 @@ async def get_tweet_by_id(session: AsyncSession, tweet_id: int) -> Tweet:
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail={
-            'result': False,
-            'error_type': 'Not Found',
-            'error_message': 'Tweet is not found.',
+            "result": False,
+            "error_type": "Not Found",
+            "error_message": "Tweet is not found.",
         },
     )
 
@@ -78,9 +86,9 @@ async def add_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
-                'result': False,
-                'error_type': 'Bad Request',
-                'error_message': 'You are already liked it.',
+                "result": False,
+                "error_type": "Bad Request",
+                "error_message": "You are already liked it.",
             },
         )
 
@@ -94,8 +102,8 @@ async def delete_like_in_db(session: AsyncSession, tweet: Tweet, user: User):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
-                'result': False,
-                'error_type': 'Bad Request',
-                'error_message': 'You are already deleted it.',
+                "result": False,
+                "error_type": "Bad Request",
+                "error_message": "You are already deleted it.",
             },
         )

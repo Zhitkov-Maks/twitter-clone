@@ -16,26 +16,21 @@ from crud.user import get_user_by_api_key
 from models.db_conf import get_async_session
 from models.model import Tweet
 from models.model import User
-from schemas.tweet_schema import (
-    AddTweetSchema,
-    ListTweetSchema,
-    ReturnAddTweetSchema,
-    SuccessSchema,
-)
+from schemas.tweet_schema import ListTweetSchema, ReturnAddTweetSchema, AddTweetSchema, SuccessSchema
 from service import tweet_constructor
 
-route_tw = APIRouter(prefix='/api')
-api_key_header = APIKeyHeader(name='api-key', auto_error=False)
+route_tw = APIRouter(prefix="/api")
+api_key_header = APIKeyHeader(name="api-key", auto_error=False)
 
 
 @route_tw.get(
-    '/tweets',
+    "/tweets",
     status_code=status.HTTP_200_OK,
     response_model=ListTweetSchema,
 )
 async def get_all_tweets(
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Get list tweets."""
     user = await get_user_by_api_key(session, api_key)
@@ -43,30 +38,30 @@ async def get_all_tweets(
 
 
 @route_tw.post(
-    '/tweets',
+    "/tweets",
     status_code=status.HTTP_201_CREATED,
     response_model=ReturnAddTweetSchema,
 )
 async def add_tweets(
-        tweet_in: AddTweetSchema,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_in: AddTweetSchema,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
     """Added "tweet."""
     user: User | None = await get_user_by_api_key(session, api_key)
     tweet: int = await add_tweet_in_db(session, user, tweet_in)
-    return {'result': True, 'tweet_id': tweet}
+    return {"result": True, "tweet_id": tweet}
 
 
 @route_tw.delete(
-    '/tweets/{tweet_id}',
+    "/tweets/{tweet_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessSchema,
 )
 async def delete_tweet(
-        tweet_id: int,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_id: int,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Removed tweet."""
     user: User = await get_user_by_api_key(session, api_key)
@@ -76,9 +71,9 @@ async def delete_tweet(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={
-                'result': False,
-                'error_type': 'Forbidden',
-                'error_message': 'You can not delete this tweet',
+                "result": False,
+                "error_type": "Forbidden",
+                "error_message": "You can not delete this tweet",
             },
         )
 
@@ -87,13 +82,14 @@ async def delete_tweet(
 
 
 @route_tw.post(
-    '/tweets/{tweet_id}/likes',
+    "/tweets/{tweet_id}/likes",
     status_code=status.HTTP_201_CREATED,
+    response_model=SuccessSchema,
 )
 async def add_likes(
-        tweet_id: int,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_id: int,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Added likes."""
     user: User | None = await get_user_by_api_key(session, api_key)
@@ -103,13 +99,14 @@ async def add_likes(
 
 
 @route_tw.delete(
-    '/tweets/{tweet_id}/likes',
+    "/tweets/{tweet_id}/likes",
     status_code=status.HTTP_200_OK,
+    response_model=SuccessSchema,
 )
 async def delete_likes(
-        tweet_id: int,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_id: int,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Removed likes."""
     user: User | None = await get_user_by_api_key(session, api_key)

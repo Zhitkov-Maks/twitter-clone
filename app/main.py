@@ -22,22 +22,22 @@ app = FastAPI()
 app.include_router(route_us)
 app.include_router(route_tw)
 api_key_header = APIKeyHeader(
-    name='api-key',
+    name="api-key",
     auto_error=False,
 )
 
 
 @app.post(
-    '/api/medias',
+    "/api/medias",
     status_code=status.HTTP_201_CREATED,
     response_model=ReturnImageSchema,
 )
 async def add_image(
-        file: UploadFile = File(...),
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    file: UploadFile = File(...),
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
     """Endpoint will save the image."""
     await get_user_by_api_key(session, api_key)
     image_url: int = await read_and_write_image(session, file)
-    return {'result': True, 'media_id': image_url}
+    return {"result": True, "media_id": image_url}

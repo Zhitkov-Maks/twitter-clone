@@ -11,21 +11,18 @@ from models.model import User
 async def get_full_user_data(session: AsyncSession, user: User) -> User:
     """Function to download complete user information."""
     stmt = (
-        select(User).
-        options(joinedload(User.followed)).
-        options(joinedload(User.follower)).
-        options(joinedload(User.tweets)).
-        filter(User.id == user.id)
+        select(User)
+        .options(joinedload(User.followed))
+        .options(joinedload(User.follower))
+        .options(joinedload(User.tweets))
+        .filter(User.id == user.id)
     )
     return await session.scalar(stmt)
 
 
 async def get_user_data_followed(session: AsyncSession, user_id) -> User:
     """Function for getting users subscribed to."""
-    stmt = (
-        select(User).options(joinedload(User.followed)).
-        filter(User.id == user_id)
-    )
+    stmt = select(User).options(joinedload(User.followed)).filter(User.id == user_id)
     return await session.scalar(stmt)
 
 
@@ -38,9 +35,9 @@ async def get_user_by_api_key(session: AsyncSession, api_key: str) -> User:
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail={
-            'result': False,
-            'error_type': 'Not Found',
-            'error_message': 'User is not found.'
+            "result": False,
+            "error_type": "Not Found",
+            "error_message": "User is not found.",
         },
     )
 
@@ -53,9 +50,9 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail={
-            'result': False,
-            'error_type': 'Not Found',
-            'error_message': 'User is not found.'
+            "result": False,
+            "error_type": "Not Found",
+            "error_message": "User is not found.",
         },
     )
 
@@ -71,9 +68,9 @@ async def add_followed(session: AsyncSession, user_id, user_followed):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
-                'result': False,
-                'error_type': 'Bad Request',
-                'error_message': 'You are already subscribed'
+                "result": False,
+                "error_type": "Bad Request",
+                "error_message": "You are already subscribed",
             },
         )
 
@@ -88,8 +85,8 @@ async def remove_followed(session: AsyncSession, user_id, user_followed):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
-                'result': False,
-                'error_type': 'Not Found',
-                'error_message': 'You are not following this user'
-            }
+                "result": False,
+                "error_type": "Not Found",
+                "error_message": "You are not following this user",
+            },
         )

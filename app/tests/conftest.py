@@ -37,8 +37,7 @@ async def override_get_async_session() -> AsyncGenerator[AsyncSession, None]:
 app.dependency_overrides[get_async_session] = override_get_async_session
 
 
-async def insert_objects_users(
-        async_session: async_sessionmaker[AsyncSession]) -> None:
+async def insert_objects_users(async_session: async_sessionmaker[AsyncSession]) -> None:
     async with (async_session() as session):
         async with session.begin():
             usr_alex = User(name="Alex", api_key="test")
@@ -51,11 +50,9 @@ async def insert_objects_users(
             usr_maks.followed.append(usr_polina)
             usr_anna.followed.append(usr_alex)
 
-            tweet_1 = Tweet(tweet_data="Tweet content",
-                            tweet_media_ids=["image.png"])
+            tweet_1 = Tweet(tweet_data="Tweet content", tweet_media_ids=["image.png"])
             tweet_2 = Tweet(
-                tweet_data="Tweet content another",
-                tweet_media_ids=["image.png"]
+                tweet_data="Tweet content another", tweet_media_ids=["image.png"]
             )
 
             usr_alex.tweets.append(tweet_1)
