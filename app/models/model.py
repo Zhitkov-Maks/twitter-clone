@@ -1,5 +1,6 @@
 from typing import List
 
+from models import Base
 from sqlalchemy import (
     ARRAY,
     Column,
@@ -7,12 +8,10 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    func,
     Table,
+    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from models.db_conf import Base
 
 likes_table = Table(
     "likes",
