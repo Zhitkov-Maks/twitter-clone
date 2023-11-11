@@ -69,11 +69,13 @@ async def test_delete_tweets_not_tweet_id(ac: AsyncClient):
 
 
 async def test_add_like(ac: AsyncClient):
+    """Testing adding likes"""
     response = await ac.post("/api/tweets/2/likes", headers={"api-key": "test"})
     assert response.status_code == 201
 
 
 async def test_added_like_twice(ac: AsyncClient):
+    """Testing adding likes twice"""
     response = await ac.post("/api/tweets/2/likes", headers={"api-key": "test"})
     data = response.json()
     assert response.status_code == 400
@@ -81,11 +83,13 @@ async def test_added_like_twice(ac: AsyncClient):
 
 
 async def test_delete_like(ac: AsyncClient):
+    """Like removal test"""
     response = await ac.delete("/api/tweets/2/likes", headers={"api-key": "test"})
     assert response.status_code == 200
 
 
 async def test_delete_like_twice(ac: AsyncClient):
+    """Trying to remove the like again"""
     response = await ac.delete("/api/tweets/2/likes", headers={"api-key": "test"})
     data = response.json()
     assert response.status_code == 400
