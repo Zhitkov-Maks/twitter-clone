@@ -6,7 +6,7 @@ from crud.user import (
     get_user_by_id,
     remove_followed,
 )
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Security, HTTPException
 from fastapi.security import APIKeyHeader
 from models.db_conf import get_async_session
 from models.model import User
@@ -80,6 +80,15 @@ async def add_follow(
 ) -> Dict[str, bool]:
     """Add subscription."""
     user: User = await get_user_by_api_key(session, api_key)
+    if user_id == user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "result": False,
+                "error_type": "Bad request",
+                "error_message": "You can't subscribe to yourself.",
+            },
+        )
     user_followed: User = await get_user_by_id(session, user_id)
     await add_followed(session, user.id, user_followed)
     return {"result": True}
