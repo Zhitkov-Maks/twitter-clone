@@ -8,6 +8,7 @@ OUT_PATH = OUT_PATH.absolute()
 
 
 async def test_upload_image(ac: AsyncClient):
+    """Test for saving an image with valid data"""
     response = await ac.post(
         "/api/medias",
         headers={"api-key": "test"},
@@ -26,6 +27,7 @@ async def test_upload_image(ac: AsyncClient):
 
 
 async def test_upload_invalid_file(ac: AsyncClient):
+    """Test for saving an image with PDF file"""
     response = await ac.post(
         "/api/medias",
         headers={"api-key": "test"},
@@ -43,6 +45,7 @@ async def test_upload_invalid_file(ac: AsyncClient):
 
 
 async def test_upload_unsupported_format(ac: AsyncClient):
+    """Test for saving an image with an image of an unsupported type"""
     response = await ac.post(
         "/api/medias",
         headers={"api-key": "test"},
