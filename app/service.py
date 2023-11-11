@@ -60,7 +60,7 @@ async def tweet_constructor(
 
 async def get_user_info(
     session: AsyncSession, user
-) -> Dict[str, bool | Dict[str, int | str]]:
+) -> Dict[str, bool | Dict[str, int | str | List[User]]]:
     """Will return complete information about the user."""
     user_full: User = await get_full_user_data(session, user)
     return {

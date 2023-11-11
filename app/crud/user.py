@@ -7,8 +7,9 @@ from sqlalchemy.orm import joinedload
 from starlette import status
 
 
-async def get_full_user_data(session: AsyncSession, user: User) -> User:
-    """Function to download complete user information."""
+async def get_full_user_data(session: AsyncSession, user: User):
+    """Function to download complete user information.
+    Returning the user with complete information."""
     stmt = (
         select(User)
         .options(joinedload(User.followed))
@@ -19,8 +20,9 @@ async def get_full_user_data(session: AsyncSession, user: User) -> User:
     return await session.scalar(stmt)
 
 
-async def get_user_data_followed(session: AsyncSession, user_id) -> User:
-    """Function for getting users subscribed to."""
+async def get_user_data_followed(session: AsyncSession, user_id):
+    """Function for getting users subscribed to.
+    Returning the user with complete information."""
     stmt = select(User).options(joinedload(User.followed)).filter(User.id == user_id)
     return await session.scalar(stmt)
 
@@ -58,7 +60,7 @@ async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
 
 async def add_followed(session: AsyncSession, user_id, user_followed):
     """Add subscription."""
-    user = await get_user_data_followed(session, user_id)
+    user: User = await get_user_data_followed(session, user_id)
     try:
         user.followed.append(user_followed)
         session.add_all(user.followed)
@@ -76,7 +78,7 @@ async def add_followed(session: AsyncSession, user_id, user_followed):
 
 async def remove_followed(session: AsyncSession, user_id, user_followed):
     """Function for unsubscribing from a user."""
-    user = await get_user_data_followed(session, user_id)
+    user: User = await get_user_data_followed(session, user_id)
     try:
         user.followed.remove(user_followed)
         await session.commit()

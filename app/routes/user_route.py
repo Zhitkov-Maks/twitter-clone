@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 from crud.user import (
     add_followed,
@@ -28,9 +28,9 @@ api_key_header = APIKeyHeader(name="api-key", auto_error=False)
 async def user_info(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
-) -> Dict[str, bool]:
+) -> Dict[str, bool | dict[str, int | str | List[User]]]:
     """Get information about the current user."""
-    user: User | None = await get_user_by_api_key(session, api_key)
+    user: User = await get_user_by_api_key(session, api_key)
     return await get_user_info(session, user)
 
 
@@ -43,10 +43,10 @@ async def user_by_id_info(
     user_id: int,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
-) -> Dict[str, bool]:
+) -> Dict[str, bool | dict[str, int | str | List[User]]]:
     """Get information about a user by ID."""
     await get_user_by_api_key(session, api_key)
-    search_user: User | None = await get_user_by_id(session, user_id)
+    search_user: User = await get_user_by_id(session, user_id)
     return await get_user_info(session, search_user)
 
 

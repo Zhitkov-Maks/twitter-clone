@@ -34,7 +34,7 @@ api_key_header = APIKeyHeader(name="api-key", auto_error=False)
 async def get_all_tweets(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
-) -> Dict[str, bool]:
+) -> Dict[str, bool | list[dict[str, int | str]]]:
     """Get list tweets."""
     user = await get_user_by_api_key(session, api_key)
     return await tweet_constructor(session, user.id)
@@ -51,7 +51,7 @@ async def add_tweets(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
     """Added "tweet."""
-    user: User | None = await get_user_by_api_key(session, api_key)
+    user: User = await get_user_by_api_key(session, api_key)
     tweet: int = await add_tweet_in_db(session, user, tweet_in)
     return {"result": True, "tweet_id": tweet}
 
@@ -95,8 +95,8 @@ async def add_likes(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Added likes."""
-    user: User | None = await get_user_by_api_key(session, api_key)
-    tweet: Tweet | None = await get_tweet_by_id(session, tweet_id)
+    user: User = await get_user_by_api_key(session, api_key)
+    tweet: Tweet = await get_tweet_by_id(session, tweet_id)
     await add_like_in_db(session, tweet, user)
     return {"result": True}
 
@@ -112,8 +112,8 @@ async def delete_likes(
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Removed likes."""
-    user: User | None = await get_user_by_api_key(session, api_key)
-    tweet: Tweet | None = await get_tweet_by_id(session, tweet_id)
+    user: User = await get_user_by_api_key(session, api_key)
+    tweet: Tweet = await get_tweet_by_id(session, tweet_id)
 
     await delete_like_in_db(session, tweet, user)
     return {"result": True}
