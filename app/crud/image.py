@@ -1,10 +1,9 @@
-from typing import Any, List
-
-from sqlalchemy import ScalarResult, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
 
 from models.model import Image
 from schemas.tweet_schema import AddTweetSchema
+from sqlalchemy import ScalarResult, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def transform_image_id_in_image_url(

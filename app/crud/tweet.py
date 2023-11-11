@@ -1,14 +1,13 @@
+from config import tweet_followers, number_of_tweets
+from crud.image import transform_image_id_in_image_url
+from crud.user import get_full_user_data
 from fastapi import HTTPException
+from models.model import Tweet, User, followers, likes_table
+from schemas.tweet_schema import AddTweetSchema
 from sqlalchemy import desc, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-
-from crud.image import transform_image_id_in_image_url
-from crud.user import get_full_user_data
-from models.model import Tweet
-from models.model import User, likes_table
-from schemas.tweet_schema import AddTweetSchema
 
 
 async def add_tweet_in_db(
@@ -28,29 +27,43 @@ async def add_tweet_in_db(
 
 async def get_all_tweet_followed(session: AsyncSession, user_id: int):
     """Function for receiving tweets sorted by."""
-    stmt = (
-        select(
-            Tweet,
-            func.count(likes_table.c.user_id).label("likes"),
+    if not tweet_followers:
+        stmt = (
+            select(
+                Tweet,
+                func.count(likes_table.c.user_id).label("likes"),
+            )
+            .join(
+                likes_table,
+                (likes_table.c.tweet_id == Tweet.tweet_id),
+                isouter=True,
+            )
+            .group_by(Tweet.tweet_id)
+            .order_by(desc("likes"))
+            .limit(number_of_tweets)
         )
-        .join(
-            likes_table,
-            (likes_table.c.tweet_id == Tweet.tweet_id),
-            isouter=True,
+    else:
+        stmt = (
+            select(
+                Tweet,
+                func.count(likes_table.c.user_id).label("likes"),
+            )
+            .join(
+                followers,
+                (followers.c.followed_id == Tweet.user_id),
+            )
+            .join(
+                likes_table,
+                (likes_table.c.tweet_id == Tweet.tweet_id),
+                isouter=True,
+            )
+            .where(
+                followers.c.follower_id == user_id,
+            )
+            .group_by(Tweet.tweet_id)
+            .order_by(desc("likes"))
+            .limit(number_of_tweets)
         )
-        .group_by(Tweet.tweet_id)
-        .order_by(desc("likes"))
-        .limit(25)
-    )
-    # stmt = select(
-    #     Tweet, func.count(likes_table.c.user_id).label('likes'),
-    # ).join(
-    #     followers, (followers.c.followed_id == Tweet.user_id),
-    # ).join(
-    #     likes_table, (likes_table.c.tweet_id == Tweet.tweet_id), isouter=True,
-    # ).where(
-    #     followers.c.follower_id == user_id,
-    # ).group_by(Tweet.tweet_id).order_by(desc('likes')).limit(25)
     all_tweet = await session.scalars(stmt)
     return all_tweet.unique().all()
 

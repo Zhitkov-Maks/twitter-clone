@@ -1,11 +1,10 @@
 from fastapi import HTTPException
+from models.model import User
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from starlette import status
-
-from models.model import User
 
 
 async def get_full_user_data(session: AsyncSession, user: User) -> User:
