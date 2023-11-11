@@ -1,6 +1,6 @@
 FROM python:3.11-alpine
 
-RUN mkdir /app
+RUN mkdir //twitter_clone
 
 COPY requirements.txt ./app/
 RUN pip install -r ./app/requirements.txt
