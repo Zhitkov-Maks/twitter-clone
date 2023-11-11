@@ -1,16 +1,15 @@
 """Module services."""
 
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
 import aiofiles
-from fastapi import HTTPException, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
-
 from crud.tweet import get_all_tweet_followed
 from crud.user import get_full_user_data
+from fastapi import HTTPException, UploadFile
 from models.model import Image, User
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 OUT_PATH = Path(__file__).parent / "./dist/images/"
 OUT_PATH.mkdir(exist_ok=True, parents=True)
