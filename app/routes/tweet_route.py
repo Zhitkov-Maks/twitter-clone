@@ -1,10 +1,5 @@
 from typing import Dict
 
-from fastapi import APIRouter, Depends, HTTPException, Security
-from fastapi.security import APIKeyHeader
-from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
-
 from crud.tweet import (
     add_like_in_db,
     add_tweet_in_db,
@@ -13,11 +8,19 @@ from crud.tweet import (
     get_tweet_by_id,
 )
 from crud.user import get_user_by_api_key
+from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi.security import APIKeyHeader
 from models.db_conf import get_async_session
-from models.model import Tweet
-from models.model import User
-from schemas.tweet_schema import ListTweetSchema, ReturnAddTweetSchema, AddTweetSchema, SuccessSchema
+from models.model import Tweet, User
+from schemas.tweet_schema import (
+    AddTweetSchema,
+    ListTweetSchema,
+    ReturnAddTweetSchema,
+    SuccessSchema,
+)
 from service import tweet_constructor
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 route_tw = APIRouter(prefix="/api")
 api_key_header = APIKeyHeader(name="api-key", auto_error=False)

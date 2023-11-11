@@ -1,21 +1,20 @@
 from typing import Dict
 
-from fastapi import APIRouter, Depends, Security
-from fastapi.security import APIKeyHeader
-from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
-
 from crud.user import (
     add_followed,
     get_user_by_api_key,
     get_user_by_id,
     remove_followed,
 )
+from fastapi import APIRouter, Depends, Security
+from fastapi.security import APIKeyHeader
 from models.db_conf import get_async_session
 from models.model import User
 from schemas.tweet_schema import SuccessSchema
 from schemas.user_schema import ReturnUserSchema
 from service import get_user_info
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 route_us = APIRouter(prefix="/api/users")
 api_key_header = APIKeyHeader(name="api-key", auto_error=False)
