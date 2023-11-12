@@ -12,14 +12,6 @@ class SuccessSchema(BaseModel):
     result: bool
 
 
-class Message(BaseModel):
-    """Schema for returned errors."""
-
-    result: bool = Field(..., description="Response status")
-    error_type: str = Field(..., description="Type error")
-    error_message: str = Field(..., description="message")
-
-
 class AddTweetSchema(BaseModel):
     """Schema for adding tweet."""
 
