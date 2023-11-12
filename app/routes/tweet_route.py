@@ -50,7 +50,7 @@ async def add_tweets(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
-    """Added "tweet."""
+    """Added tweet."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: int = await add_tweet_in_db(session, user, tweet_in)
     return {"result": True, "tweet_id": tweet}
