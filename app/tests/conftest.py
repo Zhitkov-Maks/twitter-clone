@@ -1,29 +1,32 @@
 import asyncio
 from typing import AsyncGenerator
 
-import pytest
 import pytest_asyncio
 from httpx import AsyncClient
+from main import app
+from models import Tweet, User
+from models.db_conf import Base, get_async_session
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
-    create_async_engine,
     async_sessionmaker,
+    create_async_engine,
 )
-from sqlalchemy.pool import NullPool
+from testcontainers.postgres import PostgresContainer
 
-from main import app
-from models import User, Tweet
-from models.db_conf import get_async_session, Base
+# We use testcontainers to work with tests
+postgres_container = PostgresContainer()
+postgres_container.start()
+postgres_container.driver = "asyncpg"
 
-DATABASE_URL_TEST: str = (
-    f"postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
-)
+engine_test = create_async_engine(postgres_container.get_connection_url())
 
-engine_test = create_async_engine(DATABASE_URL_TEST, poolclass=NullPool)
 async_session_maker = async_sessionmaker(
-    bind=engine_test, autoflush=False, autocommit=False, expire_on_commit=False
+    bind=engine_test,
+    autoflush=False,
+    autocommit=False,
+    expire_on_commit=False,
+    class_=AsyncSession,
 )
-
 Base.metadata.bind = engine_test
 
 
@@ -35,9 +38,9 @@ async def override_get_async_session() -> AsyncGenerator[AsyncSession, None]:
 app.dependency_overrides[get_async_session] = override_get_async_session
 
 
-async def insert_objects_users(
-        async_session: async_sessionmaker[AsyncSession]) -> None:
-    async with (async_session() as session):
+async def insert_objects_users(async_session: async_sessionmaker[AsyncSession]) -> None:
+    """Adding some test data."""
+    async with async_session() as session:
         async with session.begin():
             usr_alex = User(name="Alex", api_key="test")
             usr_maks = User(name="Maks", api_key="qwerty")
@@ -49,11 +52,9 @@ async def insert_objects_users(
             usr_maks.followed.append(usr_polina)
             usr_anna.followed.append(usr_alex)
 
-            tweet_1 = Tweet(tweet_data="Tweet content",
-                            tweet_media_ids=["image.png"])
+            tweet_1 = Tweet(tweet_data="Tweet content", tweet_media_ids=["image.png"])
             tweet_2 = Tweet(
-                tweet_data="Tweet content another",
-                tweet_media_ids=["image.png"]
+                tweet_data="Tweet content another", tweet_media_ids=["image.png"]
             )
 
             usr_alex.tweets.append(tweet_1)
@@ -73,17 +74,20 @@ async def insert_objects_users(
             await session.commit()
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest_asyncio.fixture(autouse=True, scope="session")
 async def prepare_database():
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
     await insert_objects_users(async_session_maker)
+
     yield
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    postgres_container.stop()
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 def event_loop(request):
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
