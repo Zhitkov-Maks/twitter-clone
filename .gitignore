@@ -139,5 +139,4 @@ dmypy.json
 # the rest
 .swp
 /db/
-/db/
-/db/
+.env
