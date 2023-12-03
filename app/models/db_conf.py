@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.pool import NullPool
 
 Base = declarative_base()
 
@@ -18,7 +17,7 @@ DATABASE_URL: str = "postgresql+asyncpg://{0}:{1}@db/{2}".format(
     DB_NAME,
 )
 
-engine = create_async_engine(DATABASE_URL, echo=True, poolclass=NullPool)
+engine = create_async_engine(DATABASE_URL, echo=False)
 async_session_maker = async_sessionmaker(
     bind=engine,
     autoflush=False,

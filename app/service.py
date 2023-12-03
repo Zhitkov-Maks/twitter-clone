@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Dict, List
 
 import aiofiles
+
+from config import allowed_types
 from crud.tweet import get_all_tweet_followed
 from crud.user import get_full_user_data
 from fastapi import HTTPException, UploadFile
@@ -21,7 +23,6 @@ async def read_and_write_image(
     img: UploadFile,
 ) -> int:
     """Read and write."""
-    allowed_types = ("image/jpg", "image/png", "image/jpeg")
     if img.content_type in allowed_types:
         file_location = "{0}/{1}".format(OUT_PATH, img.filename)
         file_read = await img.read()

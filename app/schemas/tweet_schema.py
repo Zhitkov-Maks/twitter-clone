@@ -1,9 +1,9 @@
 from typing import List
 
 from pydantic import BaseModel, Field
-from schemas.user_schema import UserSchema, UserSchemaLikes
 
-MAX_LENGTH_TWEET = 10000
+from config import max_length_tweet, min_length_tweet
+from schemas.user_schema import UserSchema, UserSchemaLikes
 
 
 class SuccessSchema(BaseModel):
@@ -18,8 +18,8 @@ class AddTweetSchema(BaseModel):
     tweet_data: str = Field(
         ...,
         description="Tweet content",
-        min_length=10,
-        max_length=MAX_LENGTH_TWEET,
+        min_length=min_length_tweet,
+        max_length=max_length_tweet,
     )
     tweet_media_ids: List[int] = Field(
         description="""Photos from the form are loaded automatically,
