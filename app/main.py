@@ -17,7 +17,30 @@ from service import read_and_write_image
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-app = FastAPI()
+tags_metadata = [
+    {
+        "name": "users",
+        "description": "Operations with users.",
+    },
+    {
+        "name": "tweets",
+        "description": "Manage tweets.",
+    },
+    {
+        "name": "images",
+        "description": "Operations with images"
+    },
+]
+
+app = FastAPI(
+    title="TWITTER CLONE",
+    description="Корпоративный аналог твиттер",
+    version="0.0.1",
+    contact={
+        "name": "Maksim Zhitkov",
+        "email": "m-zhitkov@inbox.com",
+    },
+)
 app.include_router(route_us)
 app.include_router(route_tw)
 api_key_header = APIKeyHeader(
@@ -30,6 +53,7 @@ api_key_header = APIKeyHeader(
     "/api/medias",
     status_code=status.HTTP_201_CREATED,
     response_model=ReturnImageSchema,
+    tags=["images"]
 )
 async def add_image(
     file: UploadFile = File(...),
