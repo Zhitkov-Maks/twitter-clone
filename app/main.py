@@ -1,6 +1,4 @@
 """
-The application initialization.
-
 The application initialization and module
 also contains an endpoint for loading images.
 """
@@ -55,12 +53,12 @@ api_key_header = APIKeyHeader(
     response_model=ReturnImageSchema,
     tags=["images"]
 )
-async def add_image(
+async def save_image(
     file: UploadFile = File(...),
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
-    """Endpoint will save the image."""
+    """Function save the image."""
     await get_user_by_api_key(session, api_key)
-    image_url: int = await read_and_write_image(session, file)
-    return {"result": True, "media_id": image_url}
+    image_id: int = await read_and_write_image(session, file)
+    return {"result": True, "media_id": image_id}

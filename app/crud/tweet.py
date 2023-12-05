@@ -1,7 +1,12 @@
+"""Module for database query operations for working with tweets."""
+from typing import List
+
 from config import tweet_followers, number_of_tweets
 from crud.image import transform_image_id_in_image_url
 from crud.user import get_full_user_data
 from fastapi import HTTPException
+
+from crud.utils import remove_images
 from models.model import Tweet, User, followers, likes_table
 from schemas.tweet_schema import AddTweetSchema
 from sqlalchemy import desc, func, select
@@ -26,7 +31,7 @@ async def add_tweet_in_db(
 
 
 async def get_all_tweet_followed(session: AsyncSession, user_id: int):
-    """Function for receiving tweets sorted by."""
+    """Function of receiving tweets sorted by number of likes."""
     if not tweet_followers:
         stmt = (
             select(
@@ -83,8 +88,10 @@ async def get_tweet_by_id(session: AsyncSession, tweet_id: int) -> Tweet:
     )
 
 
-async def delete_tweet_by_id(session: AsyncSession, tweet: Tweet):
+async def delete_tweet_by_id(session: AsyncSession, tweet: Tweet) -> None:
     """Function for deleting a tweet by ID."""
+    list_photo_url: List[str] = tweet.tweet_media_ids
+    await remove_images(list_photo_url)
     await session.delete(tweet)
     await session.commit()
 

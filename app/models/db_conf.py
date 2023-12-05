@@ -1,3 +1,4 @@
+"""We describe the connection to the database."""
 from typing import AsyncGenerator
 
 from config import DB_NAME, DB_PASS, DB_USER

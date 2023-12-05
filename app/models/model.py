@@ -1,3 +1,4 @@
+"""We describe models for creating tables in a database."""
 from typing import List
 
 from models import Base

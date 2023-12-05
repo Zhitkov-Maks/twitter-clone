@@ -1,3 +1,4 @@
+"""We describe routes for requests related to tweets."""
 from typing import Dict
 
 from crud.tweet import (
@@ -36,7 +37,7 @@ async def get_all_tweets(
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool | list[dict[str, int | str]]]:
-    """Get list tweets."""
+    """Gets a list of tweets."""
     user = await get_user_by_api_key(session, api_key)
     return await tweet_constructor(session, user.id)
 
@@ -52,7 +53,7 @@ async def add_tweets(
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
-    """Added tweet."""
+    """Adds a new tweet."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: int = await add_tweet_in_db(session, user, tweet_in)
     return {"result": True, "tweet_id": tweet}
@@ -69,7 +70,7 @@ async def delete_tweet(
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
-    """Removed tweet."""
+    """Deletes a tweet by tweet ID."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: Tweet = await get_tweet_by_id(session, tweet_id)
 
@@ -98,7 +99,7 @@ async def add_likes(
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
-    """Added likes."""
+    """Adds a like to a tweet."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: Tweet = await get_tweet_by_id(session, tweet_id)
     await add_like_in_db(session, tweet, user)
@@ -116,7 +117,7 @@ async def delete_likes(
         api_key: str = Security(api_key_header),
         session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
-    """Removed likes."""
+    """Adds a like to a tweet."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: Tweet = await get_tweet_by_id(session, tweet_id)
 
