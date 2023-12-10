@@ -14,6 +14,7 @@ from schemas.tweet_schema import ReturnImageSchema
 from service import read_and_write_image
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
+from py_fastapi_logging.middlewares.logging import LoggingMiddleware
 
 tags_metadata = [
     {
@@ -24,10 +25,7 @@ tags_metadata = [
         "name": "tweets",
         "description": "Manage tweets.",
     },
-    {
-        "name": "images",
-        "description": "Operations with images"
-    },
+    {"name": "images", "description": "Operations with images"},
 ]
 
 app = FastAPI(
@@ -39,6 +37,8 @@ app = FastAPI(
         "email": "m-zhitkov@inbox.com",
     },
 )
+app.add_middleware(LoggingMiddleware, app_name="twitter-clone.log")
+
 app.include_router(route_us)
 app.include_router(route_tw)
 api_key_header = APIKeyHeader(
@@ -51,7 +51,7 @@ api_key_header = APIKeyHeader(
     "/api/medias",
     status_code=status.HTTP_201_CREATED,
     response_model=ReturnImageSchema,
-    tags=["images"]
+    tags=["images"],
 )
 async def save_image(
     file: UploadFile = File(...),
