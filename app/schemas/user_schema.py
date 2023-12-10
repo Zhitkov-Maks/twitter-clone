@@ -44,14 +44,3 @@ class ReturnUserSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     result: bool = Field(..., description="Result, true or false")
     user: UserSchemaFull = Field(..., description="User object")
-
-
-class AddUserSchema(BaseModel):
-    """Scheme for adding a user."""
-    api_key: str = Field(
-        ...,
-        description="Some user api_key",
-        min_length=5,
-        max_length=30,
-    )
-    name: str = Field(..., description="User's name")
