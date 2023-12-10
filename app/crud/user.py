@@ -7,8 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from starlette import status
 
-from schemas.user_schema import AddUserSchema
-
 
 async def get_full_user_data(session: AsyncSession, user: User):
     """Function to download complete user information.
@@ -94,33 +92,3 @@ async def remove_followed(session: AsyncSession, user_id, user_followed):
                 "error_message": "You are not following this user",
             },
         )
-
-
-async def get_user_by_api_key_no_exception(
-        session: AsyncSession, api_key: str
-) -> bool:
-    """Function to get user by api-key. Needed to check for api_key"""
-    stmt = select(User).where(User.api_key == api_key)
-    user: User | None = await session.scalar(stmt)
-    if user is None:
-        return True
-    return False
-
-
-async def add_user_in_db(session: AsyncSession, data_in: AddUserSchema):
-    """The function adds a user to the database"""
-    data = data_in.model_dump()
-    existence_check = await get_user_by_api_key_no_exception(session, data["api_key"])
-    if existence_check:
-        user = User(**data)
-        session.add(user)
-        await session.commit()
-        return user
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail={
-            "result": False,
-            "error_type": "UNAUTHORIZED",
-            "error_message": "Api key already exists",
-        },
-    )
