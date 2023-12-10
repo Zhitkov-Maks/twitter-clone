@@ -1,3 +1,4 @@
+"""Module for database query operations for working with users."""
 from fastapi import HTTPException
 from models.model import User
 from sqlalchemy import select

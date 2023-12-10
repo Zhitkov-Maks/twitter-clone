@@ -1,3 +1,5 @@
+"""A module for setting up a test database and
+filling it with a small amount of data for tests."""
 import asyncio
 from typing import AsyncGenerator
 

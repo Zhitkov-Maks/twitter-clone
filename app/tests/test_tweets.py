@@ -3,7 +3,7 @@ from httpx import AsyncClient
 
 
 async def test_get_all_tweets(ac: AsyncClient):
-    """Tweet List Retrieval Test."""
+    """Tweet list extraction test."""
     response = await ac.get("/api/tweets", headers={"api-key": "test"})
     data = response.json()
     assert data.get("result"), len(data.get("tweets")) > 0

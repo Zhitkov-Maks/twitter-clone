@@ -1,3 +1,5 @@
+"""We describe schemes for checking the reception and
+delivery of data when working with tweets."""
 from typing import List
 
 from pydantic import BaseModel, Field
@@ -7,7 +9,7 @@ from schemas.user_schema import UserSchema, UserSchemaLikes
 
 
 class SuccessSchema(BaseModel):
-    """Return scheme True."""
+    """The circuit returns true if everything was successful."""
 
     result: bool
 
@@ -17,7 +19,7 @@ class AddTweetSchema(BaseModel):
 
     tweet_data: str = Field(
         ...,
-        description="Tweet content",
+        description="Some important message",
         min_length=min_length_tweet,
         max_length=max_length_tweet,
     )
@@ -29,21 +31,21 @@ class AddTweetSchema(BaseModel):
 
 
 class ReturnAddTweetSchema(BaseModel):
-    """Scheme for returned a tweet."""
+    """A scheme to return a successful save of a tweet."""
 
     result: bool = Field(..., description="Result, true or false")
     tweet_id: int = Field(..., description="ID созданного твита.")
 
 
 class ReturnImageSchema(BaseModel):
-    """Scheme for returning pictures."""
+    """A scheme to return a successful save of image."""
 
     result: bool = Field(..., description="Result, true or false")
     media_id: int = Field(..., description="ID созданной картинки")
 
 
 class TweetSchema(BaseModel):
-    """Scheme for returned a tweet."""
+    """A circuit for returning complete information about a tweet."""
 
     id: int = Field(..., description="ID tweet")
     content: str = Field(..., description="Tweet content")
@@ -56,7 +58,7 @@ class TweetSchema(BaseModel):
 
 
 class ListTweetSchema(BaseModel):
-    """Schematic for getting a list of tweets."""
+    """Circuit for returning a list of tweets."""
 
     result: bool = Field(..., description="Result, true or false")
     tweets: List[TweetSchema] = Field(..., description="List tweets")

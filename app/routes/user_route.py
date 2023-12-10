@@ -1,3 +1,4 @@
+"""We describe routes for requests related to users."""
 from typing import Dict, List
 
 from crud.user import (
@@ -24,12 +25,14 @@ api_key_header = APIKeyHeader(name="api-key", auto_error=False)
     "/me",
     status_code=status.HTTP_200_OK,
     response_model=ReturnUserSchema,
+    tags=["users"],
 )
-async def user_info(
+async def get_user_info_by_api_key(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool | dict[str, int | str | List[User]]]:
-    """Get information about the current user."""
+    """Get information about the current user.
+    The user is located by the api-key one who came to the headers"""
     user: User = await get_user_by_api_key(session, api_key)
     return await get_user_info(session, user)
 
@@ -38,8 +41,9 @@ async def user_info(
     "/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=ReturnUserSchema,
+    tags=["users"],
 )
-async def user_by_id_info(
+async def get_user_info_by_id(
     user_id: int,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
@@ -54,13 +58,14 @@ async def user_by_id_info(
     "/{user_id}/follow",
     status_code=status.HTTP_200_OK,
     response_model=SuccessSchema,
+    tags=["users"],
 )
 async def remove_follow(
     user_id: int,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
-    """Unfollow user."""
+    """Unsubscribe from a user."""
     user: User = await get_user_by_api_key(session, api_key)
     user_followed: User = await get_user_by_id(session, user_id)
 
@@ -72,6 +77,7 @@ async def remove_follow(
     "/{user_id}/follow",
     status_code=status.HTTP_201_CREATED,
     response_model=SuccessSchema,
+    tags=["users"],
 )
 async def add_follow(
     user_id: int,

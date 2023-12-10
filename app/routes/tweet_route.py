@@ -1,3 +1,4 @@
+"""We describe routes for requests related to tweets."""
 from typing import Dict
 
 from crud.tweet import (
@@ -30,12 +31,13 @@ api_key_header = APIKeyHeader(name="api-key", auto_error=False)
     "/tweets",
     status_code=status.HTTP_200_OK,
     response_model=ListTweetSchema,
+    tags=["tweets"],
 )
 async def get_all_tweets(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool | list[dict[str, int | str]]]:
-    """Get list tweets."""
+    """Gets a list of tweets."""
     user = await get_user_by_api_key(session, api_key)
     return await tweet_constructor(session, user.id)
 
@@ -44,13 +46,14 @@ async def get_all_tweets(
     "/tweets",
     status_code=status.HTTP_201_CREATED,
     response_model=ReturnAddTweetSchema,
+    tags=["tweets"],
 )
 async def add_tweets(
     tweet_in: AddTweetSchema,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
-    """Added tweet."""
+    """Adds a new tweet."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: int = await add_tweet_in_db(session, user, tweet_in)
     return {"result": True, "tweet_id": tweet}
@@ -60,13 +63,14 @@ async def add_tweets(
     "/tweets/{tweet_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessSchema,
+    tags=["tweets"],
 )
 async def delete_tweet(
     tweet_id: int,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
-    """Removed tweet."""
+    """Deletes a tweet by tweet ID."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: Tweet = await get_tweet_by_id(session, tweet_id)
 
@@ -88,13 +92,14 @@ async def delete_tweet(
     "/tweets/{tweet_id}/likes",
     status_code=status.HTTP_201_CREATED,
     response_model=SuccessSchema,
+    tags=["tweets"],
 )
 async def add_likes(
     tweet_id: int,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
-    """Added likes."""
+    """Adds a like to a tweet."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: Tweet = await get_tweet_by_id(session, tweet_id)
     await add_like_in_db(session, tweet, user)
@@ -105,13 +110,14 @@ async def add_likes(
     "/tweets/{tweet_id}/likes",
     status_code=status.HTTP_200_OK,
     response_model=SuccessSchema,
+    tags=["tweets"],
 )
 async def delete_likes(
     tweet_id: int,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
-    """Removed likes."""
+    """Adds a like to a tweet."""
     user: User = await get_user_by_api_key(session, api_key)
     tweet: Tweet = await get_tweet_by_id(session, tweet_id)
 

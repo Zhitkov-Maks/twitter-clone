@@ -1,10 +1,12 @@
+"""We describe schemes for checking the reception
+and delivery of data when working with users."""
 from typing import List
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserSchema(BaseModel):
-    """Schema for user information."""
+    """Schema for returning user information."""
 
     model_config = ConfigDict(from_attributes=True)
     id: int = Field(..., description="User ID")
@@ -12,7 +14,8 @@ class UserSchema(BaseModel):
 
 
 class UserSchemaLikes(BaseModel):
-    """Scheme for getting app_users likes."""
+    """The scheme for obtaining information about the user for likes
+    differs from the previous one in the ID name."""
 
     model_config = ConfigDict(from_attributes=True)
     user_id: int = Field(..., description="User ID")
@@ -36,7 +39,7 @@ class UserSchemaFull(BaseModel):
 
 
 class ReturnUserSchema(BaseModel):
-    """Scheme for returning app_users."""
+    """A schema for returning the result and complete information about the user."""
 
     model_config = ConfigDict(from_attributes=True)
     result: bool = Field(..., description="Result, true or false")

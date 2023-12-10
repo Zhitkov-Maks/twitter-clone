@@ -1,3 +1,4 @@
+"""We describe models for creating tables in a database."""
 from typing import List
 
 from models import Base
@@ -86,7 +87,7 @@ class Tweet(Base):
         index=True,
     )
     tweet_data: Mapped[str] = mapped_column(String(length=10000))
-    tweet_media_ids: Mapped[List[int]] = mapped_column(
+    tweet_media_ids: Mapped[List[str]] = mapped_column(
         ARRAY(String(200)),
         nullable=True,
     )
