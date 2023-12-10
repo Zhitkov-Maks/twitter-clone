@@ -28,7 +28,6 @@ services:
       - db
     volumes:
       - ./dist/images:/app/dist/images
-      - ./logs/twitter-clone:/var/log/twitter-clone
     logging:
       driver: loki
       options:
