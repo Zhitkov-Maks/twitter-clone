@@ -28,6 +28,7 @@ services:
       - db
     volumes:
       - ./dist/images:/app/dist/images
+      - ./logs/twitter-clone:/var/log/twitter-clone
     logging:
       driver: loki
       options:
@@ -48,6 +49,7 @@ services:
 
   grafana:
     image: grafana/grafana:9.5.14
+    restart: always
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
@@ -56,5 +58,6 @@ services:
 
   loki:
     image: grafana/loki:2.9.2
+    restart: always
     ports:
       - "3100:3100"
