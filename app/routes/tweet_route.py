@@ -34,8 +34,8 @@ api_key_header = APIKeyHeader(name="api-key", auto_error=False)
     tags=["tweets"],
 )
 async def get_all_tweets(
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool | list[dict[str, int | str]]]:
     """Gets a list of tweets."""
     user = await get_user_by_api_key(session, api_key)
@@ -49,9 +49,9 @@ async def get_all_tweets(
     tags=["tweets"],
 )
 async def add_tweets(
-        tweet_in: AddTweetSchema,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_in: AddTweetSchema,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int]:
     """Adds a new tweet."""
     user: User = await get_user_by_api_key(session, api_key)
@@ -66,9 +66,9 @@ async def add_tweets(
     tags=["tweets"],
 )
 async def delete_tweet(
-        tweet_id: int,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_id: int,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Deletes a tweet by tweet ID."""
     user: User = await get_user_by_api_key(session, api_key)
@@ -95,9 +95,9 @@ async def delete_tweet(
     tags=["tweets"],
 )
 async def add_likes(
-        tweet_id: int,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_id: int,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Adds a like to a tweet."""
     user: User = await get_user_by_api_key(session, api_key)
@@ -113,9 +113,9 @@ async def add_likes(
     tags=["tweets"],
 )
 async def delete_likes(
-        tweet_id: int,
-        api_key: str = Security(api_key_header),
-        session: AsyncSession = Depends(get_async_session),
+    tweet_id: int,
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool]:
     """Adds a like to a tweet."""
     user: User = await get_user_by_api_key(session, api_key)
