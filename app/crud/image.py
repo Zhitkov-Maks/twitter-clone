@@ -11,7 +11,9 @@ async def transform_image_id_in_image_url(
     session: AsyncSession,
     tweet_in: AddTweetSchema,
 ):
-    """Save the image name instead of the ID."""
+    """We change image IDs to URLs to store a list of
+    URLs rather than a list of IDs, which will make it
+    easier to retrieve tweets."""
     unpack = tweet_in.model_dump()
     media = await get_image_url(session, unpack["tweet_media_ids"])
     await remove_image_id_in_db(session, unpack["tweet_media_ids"])

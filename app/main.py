@@ -14,7 +14,6 @@ from schemas.tweet_schema import ReturnImageSchema
 from service import read_and_write_image
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from py_fastapi_logging.middlewares.logging import LoggingMiddleware
 
 tags_metadata = [
     {
@@ -37,7 +36,6 @@ app = FastAPI(
         "email": "m-zhitkov@inbox.com",
     },
 )
-app.add_middleware(LoggingMiddleware, app_name="twitter-clone.log")
 
 app.include_router(route_us)
 app.include_router(route_tw)
