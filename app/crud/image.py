@@ -29,12 +29,12 @@ async def get_image_url(
 
 
 async def remove_image_id_in_db(
-        session: AsyncSession,
-        image_id_list: List[int],
+    session: AsyncSession,
+    image_id_list: List[int],
 ) -> None:
     """Removes unnecessary photos from the table"""
     for img_id in image_id_list:
-        stmt = select(Image, img_id)
+        stmt = select(Image).where(Image.id == img_id)
         img = await session.scalar(stmt)
         await session.delete(img)
     await session.commit()
