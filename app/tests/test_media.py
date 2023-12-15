@@ -53,7 +53,7 @@ async def test_upload_unsupported_format(ac: AsyncClient):
             "file": (
                 "images.gif",
                 open(f"{OUT_PATH}/images.gif", "rb"),
-                "images/webp",
+                "images/gif",
             )
         },
     )
