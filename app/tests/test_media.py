@@ -51,9 +51,9 @@ async def test_upload_unsupported_format(ac: AsyncClient):
         headers={"api-key": "test"},
         files={
             "file": (
-                "images.webp",
-                open(f"{OUT_PATH}/images.webp", "rb"),
-                "images/webp",
+                "images.gif",
+                open(f"{OUT_PATH}/images.gif", "rb"),
+                "images/gif",
             )
         },
     )

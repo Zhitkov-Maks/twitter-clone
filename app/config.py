@@ -19,5 +19,6 @@ number_of_tweets: int = 100
 max_length_tweet: int = 10_000
 min_length_tweet: int = 5
 
-# Допустимые форматы картинок.
-allowed_types: tuple = ("image/jpg", "image/png", "image/jpeg")
+# Допустимые форматы картинок, если хотите добавить допустим формат gif,
+# то нужно отредактировать nginx.conf (jpeg|png|jpg|webp|gif)
+allowed_types: tuple = ("image/jpg", "image/png", "image/jpeg", "image/webp")
