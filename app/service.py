@@ -9,10 +9,9 @@ import aiofiles
 from config import allowed_types
 from crud.tweet import get_all_tweet_followed
 from crud.user import get_full_user_data
-from fastapi import HTTPException, UploadFile
+from fastapi import UploadFile
 from models.model import Image, User
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
 OUT_PATH = Path(__file__).parent / "./dist/images/"
 OUT_PATH.mkdir(exist_ok=True, parents=True)
@@ -32,7 +31,7 @@ async def generate_sequence() -> str:
 async def read_and_write_image(
     session: AsyncSession,
     img: UploadFile,
-) -> int:
+) -> int | bool:
     """The function reads and saves the file to storage."""
     if img.content_type in allowed_types:
         file_name: str = (
@@ -46,15 +45,7 @@ async def read_and_write_image(
         async with aiofiles.open(file_location, "wb") as file_object:
             await file_object.write(file_read)
         return await add_image_in_db(session, file_name)
-
-    raise HTTPException(
-        status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        detail={
-            "result": False,
-            "error_type": "UNSUPPORTED_MEDIA_TYPE",
-            "error_message": "File type is not supported",
-        },
-    )
+    return False
 
 
 async def tweet_constructor(
