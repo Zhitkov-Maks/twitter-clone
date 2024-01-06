@@ -48,7 +48,7 @@ async def test_user_add_followed_twice(ac: AsyncClient):
     response = await ac.post("/api/users/4/follow", headers={"api-key": "test"})
     data = response.json()
     assert not data.get("result")
-    assert data.get("detail").get("error_message") == "You are already subscribed"
+    assert data.get("error_message") == "Yoy already subscribed this user"
     assert response.status_code == 400
 
 
@@ -65,7 +65,7 @@ async def test_user_remove_followed_twice(ac: AsyncClient):
     response = await ac.delete("/api/users/4/follow", headers={"api-key": "test"})
     data = response.json()
     assert not data.get("result")
-    assert data.get("detail").get("error_message") == "You are not following this user"
+    assert data.get("error_message") == "You are not following this user."
     assert response.status_code == 404
 
 
@@ -73,5 +73,5 @@ async def test_user_add_followed_not_exists_user(ac: AsyncClient):
     """Test for trying to subscribe to a user who is not in the database."""
     response = await ac.post("/api/users/100/follow", headers={"api-key": "test"})
     data = response.json()
-    assert data.get("detail").get("error_type") == "Not Found"
+    assert data.get("error_message") == "User is not found"
     assert response.status_code == 404

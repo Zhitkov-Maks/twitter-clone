@@ -57,7 +57,9 @@ async def test_delete_tweet_if_tweet_written_someone_else(ac: AsyncClient):
     data = response.json()
     assert response.status_code == 403
     assert not data.get("result")
-    assert "You can not delete this tweet" == data.get("detail").get("error_message")
+    assert "You do not have permission to delete this tweet" == data.get(
+        "error_message"
+    )
 
 
 async def test_delete_tweets_not_tweet_id(ac: AsyncClient):
@@ -79,7 +81,7 @@ async def test_added_like_twice(ac: AsyncClient):
     response = await ac.post("/api/tweets/2/likes", headers={"api-key": "test"})
     data = response.json()
     assert response.status_code == 400
-    assert data.get("detail").get("error_message") == "You are already liked it."
+    assert data.get("error_message") == "Can't like twice."
 
 
 async def test_delete_like(ac: AsyncClient):
@@ -92,5 +94,5 @@ async def test_delete_like_twice(ac: AsyncClient):
     """Trying to remove the like again"""
     response = await ac.delete("/api/tweets/2/likes", headers={"api-key": "test"})
     data = response.json()
-    assert response.status_code == 400
-    assert data.get("detail").get("error_message") == "You are already deleted it."
+    assert response.status_code == 404
+    assert data.get("error_message") == "No like found to delete it."

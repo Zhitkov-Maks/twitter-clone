@@ -8,6 +8,14 @@ from config import max_length_tweet, min_length_tweet
 from schemas.user_schema import UserSchema, UserSchemaLikes
 
 
+class ErrorSchema(BaseModel):
+    """Scheme for returning errors to the client"""
+
+    result: str
+    error_type: str
+    error_message: str
+
+
 class SuccessSchema(BaseModel):
     """The circuit returns true if everything was successful."""
 

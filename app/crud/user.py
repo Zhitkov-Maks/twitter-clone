@@ -44,51 +44,36 @@ async def get_user_by_api_key(session: AsyncSession, api_key: str) -> User:
     )
 
 
-async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
+async def get_user_by_id(session: AsyncSession, user_id: int) -> User | None:
     """Function to get user by ID."""
     user: User | None = await session.get(User, user_id)
     if user is not None:
         return user
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail={
-            "result": False,
-            "error_type": "Not Found",
-            "error_message": "User is not found.",
-        },
-    )
+    return None
 
 
-async def add_followed(session: AsyncSession, user_id, user_followed):
+async def add_followed(session: AsyncSession, user_id, user_followed) -> bool:
     """Add subscription."""
     user: User = await get_user_data_followed(session, user_id)
+    followed = True
     try:
         user.followed.append(user_followed)
         session.add_all(user.followed)
         await session.commit()
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "result": False,
-                "error_type": "Bad Request",
-                "error_message": "You are already subscribed",
-            },
-        )
+        followed = False
+    finally:
+        return followed
 
 
-async def remove_followed(session: AsyncSession, user_id, user_followed):
+async def remove_followed(session: AsyncSession, user_id, user_followed) -> bool:
     """Function for unsubscribing from a user."""
     user: User = await get_user_data_followed(session, user_id)
+    followed = True
     try:
         user.followed.remove(user_followed)
         await session.commit()
     except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "result": False,
-                "error_type": "Not Found",
-                "error_message": "You are not following this user",
-            },
-        )
+        followed = False
+    finally:
+        return followed
