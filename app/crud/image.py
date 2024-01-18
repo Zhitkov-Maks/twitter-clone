@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 async def transform_image_id_in_image_url(
     session: AsyncSession,
     tweet_in: AddTweetSchema,
-):
+) -> dict:
     """We change image IDs to URLs to store a list of
     URLs rather than a list of IDs, which will make it
     easier to retrieve tweets."""
@@ -38,5 +38,6 @@ async def remove_image_id_in_db(
     for img_id in image_id_list:
         stmt = select(Image).where(Image.id == img_id)
         img = await session.scalar(stmt)
-        await session.delete(img)
+        if img:
+            await session.delete(img)
     await session.commit()
