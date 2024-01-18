@@ -37,6 +37,9 @@ app = FastAPI(
         "name": "Максим Житков",
         "email": "m-zhitkov@inbox.ru",
     },
+    docs_url='/api/docs',
+    redoc_url='/api/redoc',
+    openapi_url='/api/openapi.json'
 )
 
 app.include_router(route_us)
