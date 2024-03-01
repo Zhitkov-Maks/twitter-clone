@@ -16,6 +16,11 @@ class ErrorSchema(BaseModel):
     error_message: str
 
 
+class ErrorResponse(BaseModel):
+    """Scheme for returning errors to the client"""
+    detail: ErrorSchema = Field(..., description="Error object")
+
+
 class SuccessSchema(BaseModel):
     """The circuit returns true if everything was successful."""
 

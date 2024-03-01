@@ -11,7 +11,7 @@ from crud.tweet import (
     get_tweet_by_id,
 )
 from crud.user import get_user_by_api_key
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Security, HTTPException
 from fastapi.security import APIKeyHeader
 from models.db_conf import get_async_session
 from models.model import Tweet, User
@@ -20,7 +20,7 @@ from schemas.tweet_schema import (
     ListTweetSchema,
     ReturnAddTweetSchema,
     SuccessSchema,
-    ErrorSchema,
+    ErrorResponse,
 )
 from service import tweet_constructor
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -39,8 +39,15 @@ api_key_header = APIKeyHeader(name="api-key", auto_error=False)
 async def get_all_tweets(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
-) -> Dict[str, bool | list[dict[str, int | str]]]:
-    """Gets a list of tweets."""
+) -> dict:
+    """
+    Функция проверяет если пользователь в базе с пришедшим в header api_key, и если есть
+    то отправляет на формирование списка твитов для отправки на frontend.
+
+    :param api_key: Ключ для аутентификации пользователя.
+    :param session: Сессия для работы с бд.
+    :return Dict: Возвращает словарь с нужными данными.
+    """
     user = await get_user_by_api_key(session, api_key)
     return await tweet_constructor(session, user.id)
 
@@ -49,14 +56,23 @@ async def get_all_tweets(
     "/tweets",
     status_code=status.HTTP_201_CREATED,
     response_model=ReturnAddTweetSchema,
-    tags=["tweets"],
+    responses={400: {"model": ErrorResponse}},
+    tags=["tweets"]
 )
 async def add_tweets(
     tweet_in: AddTweetSchema,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
-) -> Dict[str, int]:
-    """Adds a new tweet."""
+) -> Dict[str, int] | JSONResponse:
+    """
+    Функция проверяет если пользователь в базе с пришедшим в header api_key, и если есть
+    то отправляет на сохранение твита.
+
+    :param tweet_in: Пришедшие с frontend данные для твита.
+    :param api_key: Ключ для аутентификации пользователя.
+    :param session: Сессия для работы с бд.
+    :return Dict: Возвращает словарь с идентификатором сохраненного твита.
+    """
     user: User = await get_user_by_api_key(session, api_key)
     tweet: int = await add_tweet_in_db(session, user, tweet_in)
     return {"result": True, "tweet_id": tweet}
@@ -66,38 +82,37 @@ async def add_tweets(
     "/tweets/{tweet_id}",
     status_code=status.HTTP_200_OK,
     response_model=SuccessSchema,
-    responses={403: {"model": ErrorSchema}, 404: {"model": ErrorSchema}},
+    responses={403: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
     tags=["tweets"],
 )
 async def delete_tweet(
     tweet_id: int,
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
-) -> Dict[str, bool] | JSONResponse:
-    """Deletes a tweet by tweet ID."""
+) -> Dict[str, bool]:
+    """
+    Функция проверяет если пользователь в базе с пришедшим в header api_key, и если есть
+    то отправляет на удаление твита.
+
+    :param tweet_id: Идентификатор для удаления твита.
+    :param api_key: Ключ для аутентификации пользователя.
+    :param session: Сессия для работы с бд.
+    :return Dict: Возвращает словарь с результатом удаления твита.
+    """
 
     user: User = await get_user_by_api_key(session, api_key)
-    tweet: Tweet | None = await get_tweet_by_id(session, tweet_id)
-    if tweet is None:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "result": False,
-                "error_type": "Not Found",
-                "error_message": "Tweet with this id not found.",
-            },
-        )
+    tweet: Tweet = await get_tweet_by_id(session, tweet_id)
 
+    # Проверяем есть ли у пользователя право на удаление данного твита.
     if tweet.user_id != user.id:
-        return JSONResponse(
-            status_code=403,
-            content={
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
                 "result": False,
                 "error_type": "Forbidden",
                 "error_message": "You do not have permission to delete this tweet",
             },
         )
-
     await delete_tweet_by_id(session, tweet)
     return {"result": True}
 
@@ -106,7 +121,7 @@ async def delete_tweet(
     "/tweets/{tweet_id}/likes",
     status_code=status.HTTP_201_CREATED,
     response_model=SuccessSchema,
-    responses={400: {"model": ErrorSchema}, 404: {"model": ErrorSchema}},
+    responses={400: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
     tags=["tweets"],
 )
 async def add_likes(
@@ -114,32 +129,20 @@ async def add_likes(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool] | JSONResponse:
-    """Adds a like to a tweet."""
+    """
+    Функция проверяет если пользователь в базе с пришедшим в header api_key,
+    есть ли твит с пришедшим идентификатором и если есть
+    то отправляем на добавление лайка к нужному твиту.
+
+    :param tweet_id: Идентификатор твита к которому нужно добавить лайк.
+    :param api_key: Ключ для аутентификации пользователя.
+    :param session: Сессия для работы с бд.
+    :return Dict: Возвращает словарь с результатом добавления лайка.
+    """
 
     user: User = await get_user_by_api_key(session, api_key)
-
-    tweet: Tweet | None = await get_tweet_by_id(session, tweet_id)
-    if tweet is None:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "result": False,
-                "error_type": "Not Found",
-                "error_message": "Tweet with this id not found.",
-            },
-        )
-
-    like: bool = await add_like_in_db(session, tweet, user)
-    if not like:
-        return JSONResponse(
-            status_code=400,
-            content={
-                "result": False,
-                "error_type": "Bad Request",
-                "error_message": "Can't like twice.",
-            },
-        )
-
+    tweet: Tweet = await get_tweet_by_id(session, tweet_id)
+    await add_like_in_db(session, tweet, user)
     return {"result": True}
 
 
@@ -147,7 +150,7 @@ async def add_likes(
     "/tweets/{tweet_id}/likes",
     status_code=status.HTTP_200_OK,
     response_model=SuccessSchema,
-    responses={404: {"model": ErrorSchema}},
+    responses={404: {"model": ErrorResponse}},
     tags=["tweets"],
 )
 async def delete_likes(
@@ -155,29 +158,18 @@ async def delete_likes(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, bool] | JSONResponse:
-    """Adds a like to a tweet."""
+    """
+    Функция проверяет если пользователь в базе с пришедшим в header api_key,
+    есть ли твит с пришедшим идентификатором и если есть
+    то отправляем на добавление лайка к нужному твиту.
+
+    :param tweet_id: Идентификатор твита к которому нужно удалить лайк.
+    :param api_key: Ключ для аутентификации пользователя.
+    :param session: Сессия для работы с бд.
+    :return Dict: Возвращает словарь с результатом удаления лайка.
+    """
 
     user: User = await get_user_by_api_key(session, api_key)
-    tweet: Tweet | None = await get_tweet_by_id(session, tweet_id)
-    if tweet is None:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "result": False,
-                "error_type": "Not Found",
-                "error_message": "Tweet with this id not found.",
-            },
-        )
-
-    delete: bool = await delete_like_in_db(session, tweet, user)
-    if not delete:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "result": False,
-                "error_type": "Not Found",
-                "error_message": "No like found to delete it.",
-            },
-        )
-
+    tweet: Tweet = await get_tweet_by_id(session, tweet_id)
+    await delete_like_in_db(session, tweet, user)
     return {"result": True}

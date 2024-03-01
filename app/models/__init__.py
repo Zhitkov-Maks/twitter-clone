@@ -3,9 +3,9 @@ __all__ = (
     "User",
     "Tweet",
     "Image",
-    "followers",
     "likes_table",
+    "followers",
 )
 
 from .db_conf import Base
-from .model import User, Tweet, Image, followers, likes_table
+from .model import User, Tweet, Image, likes_table, followers
