@@ -37,6 +37,9 @@ app = FastAPI(
         "name": "Максим Житков",
         "email": "m-zhitkov@inbox.ru",
     },
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
 )
 
 app.include_router(route_us)
@@ -59,19 +62,21 @@ async def save_image(
     api_key: str = Security(api_key_header),
     session: AsyncSession = Depends(get_async_session),
 ) -> Dict[str, int] | JSONResponse:
-    """Function save the image."""
+    """
+    Функция принимает файл и отправляет его на сохранение.
+    При успешной обработке возвращает словарь в котором будет id сохраненной картинки.
 
+    :param file: Картинка из формы
+    :param api_key: api_key для аутентификации пользователя.
+    :param session: Сессия для работы с базой данных.
+    :return Dict | JSONResponse: При успешном сохранении возвращает словарь,
+    в случае ошибки JSONResponse
+    """
+
+    # Проверяем если пришедший api_key в базе данных с пользователями, если не будет
+    # найден пользователь то будет проброшена ошибка.
     await get_user_by_api_key(session, api_key)
 
-    image_id: int | bool = await read_and_write_image(session, file)
-    if not image_id:
-        return JSONResponse(
-            status_code=415,
-            content={
-                "result": False,
-                "error_type": "UNSUPPORTED_MEDIA_TYPE",
-                "error_message": "File type is not supported",
-            },
-        )
-
+    # Отравляем на сохранение картинки в хранилище, и записи данных о картинке в бд.
+    image_id: int = await read_and_write_image(session, file)
     return {"result": True, "media_id": image_id}

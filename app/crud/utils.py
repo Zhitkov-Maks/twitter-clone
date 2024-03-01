@@ -10,6 +10,11 @@ OUT_PATH = OUT_PATH.absolute()
 
 
 async def remove_images(images_list: List[str]) -> None:
-    """Function for deleting pictures from storage."""
+    """
+    Функция для удаления картинок из хранилища.
+
+    :param images_list: Список имен картинок которые необходимо удалить.
+    :return: None
+    """
     for img in images_list:
         os.remove(f"{OUT_PATH}/{img}")

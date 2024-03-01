@@ -44,7 +44,7 @@ async def insert_objects_users(async_session: async_sessionmaker[AsyncSession]) 
     """Adding some test data."""
     async with async_session() as session:
         async with session.begin():
-            usr_alex = User(name="Alex", api_key="test")
+            usr_alex: User = User(name="Alex", api_key="test")
             usr_maks = User(name="Maks", api_key="qwerty")
             usr_polina = User(name="Polina", api_key="test_2")
             usr_anna = User(name="Anna", api_key="qwerty_2")
